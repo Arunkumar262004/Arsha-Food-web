@@ -9,7 +9,7 @@ const Productview = () => {
   const { id } = useParams();
   const [foodId, setFoodid] = useState(null);
   const [imgLoaded, setImgLoaded] = useState(false);
-  const url = "http://localhost:5000";
+  const url = "https://arsha-food-web.onrender.com";
   const navigate = useNavigate();
 
   useEffect(() => {

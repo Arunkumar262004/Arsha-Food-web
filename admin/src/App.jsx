@@ -11,7 +11,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
-  const url = "http://localhost:5000";
+  const url = "https://arsha-food-web.onrender.com";
 
   // Check token from localStorage on first load
   const [isAuthenticated, setIsAuthenticated] = useState(

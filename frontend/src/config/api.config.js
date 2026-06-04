@@ -5,7 +5,7 @@
 
 export const API_CONFIG = {
   // Backend API URL - set via environment variables
-  BASE_URL: import.meta.env.VITE_API_URL || "http://localhost:5000",
+  BASE_URL: import.meta.env.VITE_API_URL || "https://arsha-food-web.onrender.com",
   
   // API Endpoints
   ENDPOINTS: {

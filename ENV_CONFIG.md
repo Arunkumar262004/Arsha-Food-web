@@ -16,20 +16,20 @@ ADMIN_PASSWORD=12345678
 ### 2. Frontend (`.env`)
 ```env
 # Set your backend API URL here
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=https://arsha-food-web.onrender.com
 ```
 
 ### 3. Admin (`.env`)
 ```env
 # Set your backend API URL here
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=https://arsha-food-web.onrender.com
 ```
 
 ## Deployment URLs
 
 ### Local Development
 ```env
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=https://arsha-food-web.onrender.com
 ```
 
 ### Render/Production
@@ -54,7 +54,7 @@ Both files have the same structure and read from `VITE_API_URL` environment vari
 
 ```javascript
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || "http://localhost:5000",
+  BASE_URL: import.meta.env.VITE_API_URL || "https://arsha-food-web.onrender.com",
   ENDPOINTS: {
     FOOD_ADD: "/api/food/add",
     USER_LOGIN: "/api/user/login",
