@@ -8,10 +8,14 @@ const authMiddlewear = async(req,res,next) =>{
 
     try{
         const tokendecode =jwt.verify(token,process.env.JWT_SECRET);
+        // Admin tokens are for the admin panel only.
+        if (tokendecode.type === "admin") {
+            return res.json({success:false,message:"Not Authorised Login  "})
+        }
+        req.body = req.body || {};
         req.body.userId = tokendecode.id;
         next();
     }catch (error){
-        console.log(error);
         return res.json({success:false,message:"Token Expired Login Again"})
 
     }

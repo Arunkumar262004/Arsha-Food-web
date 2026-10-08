@@ -1,45 +1,20 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import './Verify.css'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useContext } from 'react';
-import { StoreContext } from '../../../context/Storecontext';
-import { useEffect } from 'react';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom'
 
-
-
+// Payments are now verified in-page via Razorpay Checkout. This route only
+// exists so old Stripe redirect links still land somewhere sensible.
 const Verify = () => {
-
-
-
-    const [searchParams, setSearchparams] = useSearchParams();
-
-    const success = searchParams.get('success');
-    const orderId = searchParams.get('orderId');
-    const { url } = useContext(StoreContext);
     const navigate = useNavigate();
 
-    const verfiyPayment = async () => {
-        const response = await axios.post(url + "/api/order/verify", { success, orderId });
-        if (response.data.success) {
-            navigate("myorders")
-        } else {
-            navigate("/");
-        }
-       
-    }
+    useEffect(() => {
+        navigate("/myorders", { replace: true });
+    }, [navigate])
 
-
-useEffect(()=>{
-    verfiyPayment();
-})
-
-
- return (
-            <div className='verify'>
-                <div className="spinner"></div>
-
-            </div>
-        )
+    return (
+        <div className='verify'>
+            <div className="spinner"></div>
+        </div>
+    )
 }
-    export default Verify
+export default Verify

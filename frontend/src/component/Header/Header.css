@@ -1,58 +1,258 @@
-.header{
-    height: 34vw;
-    margin: 30px auto;
-    background: url('./header_img.png') no-repeat;
-    background-size: contain;
-    position: relative;
-    background-position: center;
+/* COFFEE HERO SECTION (MATCHING REFERENCE IMAGE PROPORTIONS: SMALL TEXT & GIANT CUP) */
+
+.coffee-hero-section {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  background: linear-gradient(145deg, #2a1a16 0%, #1a0f0c 55%, #100806 100%);
+  margin-top: -24px;
+  overflow: hidden;
+  font-family: 'Outfit', system-ui, sans-serif;
 }
-.header-content{
-    position: absolute;
-    display: flex;
+
+.coffee-hero-container {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 32px 36px 40px;
+  display: grid;
+  grid-template-columns: 0.82fr 1.18fr;
+  align-items: center;
+  gap: 32px;
+  position: relative;
+  min-height: 560px;
+}
+
+/* LEFT COLUMN: ELEGANT COMPACT TEXT */
+.coffee-hero-left {
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+  padding-left: 12px;
+}
+
+.coffee-display-title {
+  display: flex;
+  flex-direction: column;
+  line-height: 0.88;
+  user-select: none;
+}
+
+.coffee-title-word {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 5.8vw, 86px);
+  font-weight: 400;
+  color: #e7d8c5;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  line-height: 0.88;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.coffee-hero-sub {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #baa797;
+  max-width: 360px;
+  margin-top: 18px;
+  font-weight: 400;
+}
+
+.coffee-hero-buttons {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 26px;
+  flex-wrap: wrap;
+}
+
+.coffee-btn-primary {
+  background: #7a5223;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  padding: 12px 28px;
+  border-radius: 5px;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(122, 82, 35, 0.4);
+  display: inline-block;
+  text-align: center;
+}
+
+.coffee-btn-primary:hover {
+  background: #96662e;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(122, 82, 35, 0.55);
+}
+
+.coffee-btn-secondary {
+  background: #e7d8c5;
+  color: #221612;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  padding: 12px 28px;
+  border-radius: 5px;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  display: inline-block;
+  text-align: center;
+}
+
+.coffee-btn-secondary:hover {
+  background: #f4e8d9;
+  transform: translateY(-2px);
+}
+
+.coffee-hero-footer-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.coffee-qr-box {
+  width: 52px;
+  height: 52px;
+  background: #e7d8c5;
+  color: #221612;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  padding: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.coffee-social-trust {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #a89584;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.coffee-social-icons {
+  display: flex;
+  gap: 10px;
+}
+
+.coffee-social-icons a {
+  color: #e7d8c5;
+  transition: opacity 0.2s;
+}
+
+.coffee-social-icons a:hover {
+  opacity: 0.8;
+}
+
+/* RIGHT COLUMN: GIANT CUP DOMINATING RIGHT SIDE */
+.coffee-hero-right {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.coffee-badge-vertical {
+  position: absolute;
+  top: 10px;
+  right: 0px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #baa797;
+  z-index: 3;
+}
+
+.coffee-vertical-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #a89584;
+  text-transform: uppercase;
+}
+
+.coffee-img-wrapper {
+  width: 100%;
+  max-width: 620px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.coffee-hero-img {
+  width: 100%;
+  max-width: 560px;
+  max-height: 580px;
+  object-fit: contain;
+  border-radius: 16px;
+  filter: drop-shadow(0 25px 45px rgba(0, 0, 0, 0.75));
+  transition: transform 0.3s ease;
+}
+
+/* RESPONSIVE LAYOUT */
+@media (max-width: 1023px) {
+  .coffee-hero-container {
+    grid-template-columns: 1fr;
+    padding: 36px 20px 44px;
+    gap: 28px;
+  }
+  .coffee-hero-left {
+    align-items: center;
+    text-align: center;
+    padding-left: 0;
+  }
+  .coffee-hero-sub {
+    text-align: center;
+  }
+  .coffee-hero-buttons {
+    justify-content: center;
+  }
+  .coffee-hero-footer-row {
+    justify-content: center;
+  }
+  .coffee-badge-vertical {
+    display: none;
+  }
+  .coffee-hero-img {
+    max-width: 380px;
+    max-height: 440px;
+  }
+}
+
+@media (max-width: 640px) {
+  .coffee-hero-container {
+    padding: 28px 16px 36px;
+  }
+  .coffee-title-word {
+    font-size: 48px;
+  }
+  .coffee-hero-sub {
+    font-size: 13.5px;
+  }
+  .coffee-hero-buttons {
     flex-direction: column;
-    align-items: start;
-    gap: 1.5vw;
-    max-width: 50%;
-    bottom: 10%;
-    left: 5vw;
-    animation: fadeIn 3s;
-}
-.header-content h2{
-    font-weight: 500;
-    color: white;
-    font-size: max(4.5vw,22px);
-}
-.header-content p{
-    color: white;
-    font-size: 1vh;
-}
-.header-content button{
-    border: none;
-    color: #747474;
-    font-weight: 500;
-    padding: 1vw 2.3vw;
-    background-color: white;
-    font-size: max(1vw,13px);
-    border-radius: 50px;
-    cursor: pointer;
-}
-
-@media (max-width : 1050px) {
-    
-    .header-content{
-        max-width: 45%;
-    }
-}
-
-@media (max-width : 750px) {
-  
-    .header-content{
-        max-width: 65%;
-    }
-    .header-content p {
-        display: none;
-    }
-    .header-content button{
-        padding: 2vw vw;
-    }
+    width: 100%;
+  }
+  .coffee-btn-primary, .coffee-btn-secondary {
+    width: 100%;
+  }
+  .coffee-hero-img {
+    max-width: 300px;
+    max-height: 360px;
+  }
 }

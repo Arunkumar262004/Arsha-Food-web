@@ -1,0 +1,20 @@
+.role-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.role-card { display: flex; flex-direction: column; gap: 10px; min-height: 180px; }
+.role-top { display: flex; align-items: center; gap: 12px; }
+.role-top strong { font-size: 16px; font-weight: 600; }
+.role-icon { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary); flex-shrink: 0; }
+.role-meter { height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.role-meter span { display: block; height: 100%; border-radius: 999px; background: var(--primary); }
+
+.perm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.perm-group { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.perm-group-head { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.perm-group-head strong { flex: 1; font-weight: 600; }
+.perm-group-head input, .perm-chip input { width: 16px; height: 16px; accent-color: var(--primary); }
+.perm-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.perm-chip {
+  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 9px;
+  border: 1.5px solid var(--border); background: var(--surface-2); cursor: pointer; font-size: 13px; font-weight: 500; color: var(--ink-2);
+}
+.perm-chip.on { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+.perm-chip input { position: absolute; opacity: 0; pointer-events: none; }

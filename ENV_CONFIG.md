@@ -6,12 +6,8 @@ Both frontend and admin panels use a centralized API configuration system. You o
 ## Files to Configure
 
 ### 1. Backend (`.env`)
-```env
-JWT_SECRET="random#secret"
-STRIPE_SECRET_KEY="sk_test_..."
-ADMIN_EMAIL=arunkumar957877@gmail.com
-ADMIN_PASSWORD=12345678
-```
+See `backend/.env.example` for every key (MongoDB, JWT, Razorpay, Supabase Storage, first admin).
+Never put real values in this file; it is committed to git.
 
 ### 2. Frontend (`.env`)
 ```env

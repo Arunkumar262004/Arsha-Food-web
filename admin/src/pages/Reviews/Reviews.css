@@ -1,0 +1,47 @@
+.rv-page {
+  max-width: 1200px;
+}
+
+.rv-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.rv-stat {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rv-stat span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+
+.rv-stat strong {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text, #0f172a);
+}
+
+.rv-star-rating {
+  color: #f59e0b;
+  letter-spacing: 2px;
+}
+
+.rv-user-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-top: 4px;
+}

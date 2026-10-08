@@ -4,16 +4,19 @@ import { assets } from '../../assets/assets';
 
 const AppDownload = () => {
   return (
-    <div className='app-download' id='app-download'>
-      <p>
-        For a Better Experience <br />
-        Download the Tomato App
-      </p>
-      <div className="app-download-platform">
-        <img src={assets.play_store} alt='Google Play Store' />
-        <img src={assets.app_store} alt='Apple App Store' />
+    <section className='container' id='app-download'>
+      <div className="app-dl">
+        <div>
+          <div className="section-eyebrow">Coming soon</div>
+          <h2 className="section-title">Order even faster with the Arsha app</h2>
+          <p className="section-sub">Track your delivery live, save favourites and reorder in one tap.</p>
+        </div>
+        <div className="app-dl-stores">
+          <img src={assets.play_store} alt='Get it on Google Play' />
+          <img src={assets.app_store} alt='Download on the App Store' />
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -1,0 +1,110 @@
+.shell { --sb-w: 248px; display: flex; min-height: 100vh; }
+.shell.is-collapsed { --sb-w: 80px; }
+
+/* ── Sidebar: labelled sections when open, icon rail when collapsed ── */
+.sb {
+  position: sticky; top: 0; height: 100vh; width: var(--sb-w); flex-shrink: 0;
+  background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; transition: width .2s ease; z-index: 50;
+}
+.sb-brand { display: flex; align-items: center; gap: 12px; padding: 20px 20px 16px; min-height: 76px; }
+.sb-logo { width: 40px; height: 40px; object-fit: contain; border-radius: 12px; background: var(--primary-soft); padding: 4px; flex-shrink: 0; }
+.sb-brand-text { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.sb-brand-text strong { font-size: 17px; font-weight: 700; }
+.sb-brand-text span { font-size: 12px; color: var(--ink-3); }
+
+.sb-nav { flex: 1; overflow-y: auto; padding: 4px 14px 14px; display: flex; flex-direction: column; gap: 14px; }
+.sb-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); padding: 0 10px 6px; }
+.sb-link {
+  display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; border-radius: 12px;
+  color: var(--ink-2); font-weight: 500; transition: background .15s, color .15s; white-space: nowrap;
+}
+.sb-link:hover { background: var(--surface-2); color: var(--ink); }
+.sb-link.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
+.sb-link svg { flex-shrink: 0; }
+
+.sb-foot { padding: 14px; border-top: 1px solid var(--border); }
+.sb-user { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 14px; background: var(--surface-2); }
+.sb-user-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.sb-user-text strong { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-user-text span { font-size: 12px; color: var(--ink-3); }
+
+.avatar {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  display: grid; place-items: center; font-weight: 700; font-size: 14px;
+  background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff;
+}
+.avatar-sm { width: 32px; height: 32px; font-size: 12px; }
+
+/* Collapsed rail */
+.shell.is-collapsed .sb-brand { justify-content: center; padding: 20px 0 16px; }
+.shell.is-collapsed .sb-brand-text,
+.shell.is-collapsed .sb-label,
+.shell.is-collapsed .sb-link span,
+.shell.is-collapsed .sb-user-text { display: none; }
+.shell.is-collapsed .sb-nav { padding: 4px 16px; align-items: center; }
+.shell.is-collapsed .sb-section { display: flex; flex-direction: column; gap: 6px; padding-top: 8px; border-top: 1px solid var(--border); }
+.shell.is-collapsed .sb-section:first-child { border-top: 0; padding-top: 0; }
+.shell.is-collapsed .sb-link { width: 46px; height: 46px; justify-content: center; padding: 0; }
+.shell.is-collapsed .sb-user { justify-content: center; background: none; padding: 0; }
+.sb-scrim { display: none; }
+
+/* ── Header ── */
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.hd {
+  position: sticky; top: 0; z-index: 40; height: 72px; display: flex; align-items: center; gap: 16px;
+  padding: 0 24px; background: rgba(244, 246, 251, .85); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.hd-pills { display: flex; gap: 8px; min-width: 0; overflow: hidden; }
+.pill {
+  display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px;
+  border-radius: 999px; background: var(--surface); border: 1px solid var(--border);
+  font-weight: 500; color: var(--ink-2); white-space: nowrap;
+}
+.pill-ring { width: 14px; height: 14px; border-radius: 50%; border: 3px solid currentColor; opacity: .9; }
+.pill-ok { color: var(--up); }
+.pill-ok .pill-ring { box-shadow: 0 0 0 3px var(--up-soft); }
+.pill-bad { color: var(--down); }
+
+.hd-right { margin-left: auto; display: flex; align-items: center; gap: 14px; position: relative; }
+.hd-date { color: var(--ink-3); font-size: 13px; white-space: nowrap; }
+.hd-profile {
+  display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 10px 0 6px;
+  border-radius: 12px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-weight: 600;
+}
+.hd-profile:hover { border-color: var(--border-strong); }
+.hd-menu {
+  position: absolute; right: 0; top: 52px; width: 240px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg); padding: 6px; z-index: 60;
+}
+.hd-menu-head { padding: 10px 12px 12px; border-bottom: 1px solid var(--border); margin-bottom: 6px; display: flex; flex-direction: column; }
+.hd-menu-head span { font-size: 12px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; }
+.hd-menu button {
+  width: 100%; display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 12px;
+  border: 0; background: none; border-radius: 9px; cursor: pointer; color: var(--ink-2); font-weight: 500;
+}
+.hd-menu button:hover { background: var(--surface-2); color: var(--ink); }
+.hd-menu button.danger { color: var(--down); }
+
+.content { flex: 1; min-width: 0; }
+
+/* ── Responsive: sidebar becomes an off-canvas drawer ── */
+@media (max-width: 1023px) {
+  .shell, .shell.is-collapsed { --sb-w: 264px; }
+  .sb { position: fixed; left: 0; top: 0; transform: translateX(-100%); transition: transform .2s ease; box-shadow: var(--shadow-lg); }
+  .shell.is-mobile-open .sb { transform: none; }
+  .shell.is-mobile-open .sb-scrim { display: block; position: fixed; inset: 0; background: rgba(20,26,46,.35); z-index: 45; }
+  /* the rail look never applies inside the drawer */
+  .shell.is-collapsed .sb-brand-text, .shell.is-collapsed .sb-label,
+  .shell.is-collapsed .sb-link span, .shell.is-collapsed .sb-user-text { display: initial; }
+  .shell.is-collapsed .sb-brand { justify-content: flex-start; padding: 20px 20px 16px; }
+  .shell.is-collapsed .sb-nav { align-items: stretch; padding: 4px 14px 14px; }
+  .shell.is-collapsed .sb-section { border-top: 0; padding-top: 0; }
+  .shell.is-collapsed .sb-link { width: auto; height: 42px; justify-content: flex-start; padding: 0 12px; }
+  .shell.is-collapsed .sb-user { justify-content: flex-start; background: var(--surface-2); padding: 8px; }
+}
+@media (max-width: 640px) {
+  .hd { padding: 0 16px; gap: 10px; height: 64px; }
+  .hide-sm { display: none !important; }
+}

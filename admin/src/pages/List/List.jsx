@@ -1,365 +1,418 @@
-import React, { useEffect, useState } from 'react'
-import axios from "axios"
-import { toast } from "react-toastify"
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { api, errMsg, imageSrc } from "../../lib/api";
+import { money, dateShort } from "../../lib/format";
+import { PageHead, ConfirmDialog, Empty, Modal } from "../../components/ui";
+import Icon from "../../components/Icon";
+import { useAuth } from "../../context/AuthContext";
 
-const List = ({ url }) => {
+const CATEGORY_OPTIONS = [
+  "Salad",
+  "Rolls",
+  "Deserts",
+  "Sandwich",
+  "Cake",
+  "Pure Veg",
+  "Pasta",
+  "Noodles",
+];
+
+const EditProductModal = ({ item, onClose, onSaved }) => {
+  const [name, setName] = useState(item.name || "");
+  const [description, setDescription] = useState(item.description || "");
+  const [category, setCategory] = useState(item.category || "Salad");
+  const [price, setPrice] = useState(item.price || "");
+
+  const initialExisting = item.images && item.images.length ? item.images : (item.image ? [item.image] : []);
+  const [existingImages, setExistingImages] = useState(initialExisting);
+  const [newImageFiles, setNewImageFiles] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const handlePickNewFiles = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setNewImageFiles((prev) => [...prev, ...files].slice(0, 10 - existingImages.length));
+    }
+  };
+
+  const removeExisting = (index) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewFile = (index) => {
+    setNewImageFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (existingImages.length === 0 && newImageFiles.length === 0) {
+      toast.error("Please keep or add at least one photo for the product.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const formData = new FormData();
+      formData.append("id", item._id);
+      formData.append("name", name);
+      formData.append("description", description);
+      formData.append("category", category);
+      formData.append("price", price);
+      formData.append("existingImages", JSON.stringify(existingImages));
+
+      newImageFiles.forEach((file) => {
+        formData.append("images", file);
+      });
+
+      const response = await api.post("/api/food/update", formData);
+      if (response.data.success) {
+        toast.success("Product updated successfully with multiple photos!");
+        onSaved();
+      } else {
+        toast.error(response.data.message || "Failed to update product");
+      }
+    } catch (err) {
+      toast.error(errMsg(err, "Failed to update product"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const totalCount = existingImages.length + newImageFiles.length;
+
+  return (
+    <Modal
+      size="lg"
+      title={`Edit ${item.name}`}
+      onClose={onClose}
+      footer={
+        <>
+          <button className="btn btn-ghost" onClick={onClose} disabled={busy}>
+            Cancel
+          </button>
+          <button className="btn btn-primary" form="edit-product-form" disabled={busy}>
+            {busy && <span className="spinner" />} Save Changes
+          </button>
+        </>
+      }
+    >
+      <form id="edit-product-form" onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        <div className="field">
+          <label style={{ display: "flex", justifyContent: "space-between" }}>
+            <span>Product Photos ({totalCount} / 10 max)</span>
+          </label>
+          <div style={{ fontSize: 12, color: "var(--ink-3)", marginBottom: 8 }}>
+            Add 5 to 10 photos of your dish from different angles. First photo is the primary cover image.
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))", gap: 10, marginBottom: 12 }}>
+            {existingImages.map((img, idx) => (
+              <div key={`exist-${idx}`} style={{ position: "relative", aspectRatio: "1", borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)", background: "var(--surface-2)" }}>
+                <img src={imageSrc(img)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                {idx === 0 && newImageFiles.length === 0 && (
+                  <span style={{ position: "absolute", bottom: 2, left: 2, background: "var(--primary)", color: "#fff", fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 4 }}>
+                    Primary
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeExisting(idx)}
+                  style={{
+                    position: "absolute", top: 2, right: 2, background: "rgba(0,0,0,0.65)", color: "#fff", border: "none",
+                    borderRadius: "50%", width: 20, height: 20, cursor: "pointer", display: "grid", placeItems: "center", fontSize: 12
+                  }}
+                  title="Remove image"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+
+            {newImageFiles.map((file, idx) => (
+              <div key={`new-${idx}`} style={{ position: "relative", aspectRatio: "1", borderRadius: 10, overflow: "hidden", border: "2px solid var(--primary)", background: "var(--surface-2)" }}>
+                <img src={URL.createObjectURL(file)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                {existingImages.length === 0 && idx === 0 && (
+                  <span style={{ position: "absolute", bottom: 2, left: 2, background: "var(--primary)", color: "#fff", fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 4 }}>
+                    Primary
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeNewFile(idx)}
+                  style={{
+                    position: "absolute", top: 2, right: 2, background: "rgba(0,0,0,0.65)", color: "#fff", border: "none",
+                    borderRadius: "50%", width: 20, height: 20, cursor: "pointer", display: "grid", placeItems: "center", fontSize: 12
+                  }}
+                  title="Remove image"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {totalCount < 10 && (
+            <label className="btn btn-outline" style={{ cursor: "pointer", width: "fit-content", fontSize: 13 }}>
+              <Icon name="plus" size={16} /> Add More Photos (Select Multiple)
+              <input type="file" multiple accept="image/*" hidden onChange={handlePickNewFiles} />
+            </label>
+          )}
+        </div>
+
+        <div className="field">
+          <label htmlFor="edit-name">Product Name</label>
+          <input id="edit-name" className="input" required value={name} onChange={(e) => setName(e.target.value)} />
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div className="field">
+            <label htmlFor="edit-cat">Category</label>
+            <select id="edit-cat" className="select" required value={category} onChange={(e) => setCategory(e.target.value)}>
+              {CATEGORY_OPTIONS.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="edit-price">Price (₹)</label>
+            <input
+              id="edit-price"
+              type="number"
+              step="0.01"
+              min="0"
+              className="input num"
+              required
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="field">
+          <label htmlFor="edit-desc">Description</label>
+          <textarea
+            id="edit-desc"
+            className="textarea"
+            rows={3}
+            required
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
+const List = () => {
+  const navigate = useNavigate();
+  const { can } = useAuth();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [removing, setRemoving] = useState(null);
+  const [q, setQ] = useState("");
+  const [cat, setCat] = useState("All");
+  const [sort, setSort] = useState("newest");
+  const [editing, setEditing] = useState(null);
+  const [confirm, setConfirm] = useState(null);
+  const [removing, setRemoving] = useState(false);
 
   const fetchlist = async () => {
     try {
-      const response = await axios.get(`${url}/api/food/list`);
-      if (response.data.success) {
-        setList(response.data.data);
-      } else {
-        toast.error("Failed to load food items");
-      }
-    } catch {
-      toast.error("Network error");
+      const response = await api.get("/api/food/list");
+      if (response.data.success) setList(response.data.data);
+      else toast.error("Failed to load products");
+    } catch (err) {
+      toast.error(errMsg(err, "Network error"));
     } finally {
       setLoading(false);
     }
   };
 
-  const remove_function = async (foodid) => {
-    setRemoving(foodid);
+  useEffect(() => {
+    fetchlist();
+    document.title = "Products · Inofex Restaurant Admin";
+  }, []);
+
+  const categories = useMemo(() => {
+    const counts = {};
+    for (const i of list) counts[i.category] = (counts[i.category] || 0) + 1;
+    return [["All", list.length], ...Object.entries(counts).sort()];
+  }, [list]);
+
+  const rows = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    const r = list.filter(
+      (i) =>
+        (cat === "All" || i.category === cat) &&
+        (!needle || i.name.toLowerCase().includes(needle) || i.description?.toLowerCase().includes(needle))
+    );
+    const by = {
+      newest: (a, b) => (b._id > a._id ? 1 : -1),
+      name: (a, b) => a.name.localeCompare(b.name),
+      priceAsc: (a, b) => a.price - b.price,
+      priceDesc: (a, b) => b.price - a.price,
+    }[sort];
+    return [...r].sort(by);
+  }, [list, q, cat, sort]);
+
+  const remove = async () => {
+    setRemoving(true);
     try {
-      const response = await axios.post(`${url}/api/food/remove`, { id: foodid });
-      await fetchlist();
+      const response = await api.post("/api/food/remove", { id: confirm._id });
       if (response.data.success) {
-        toast.success("Food item removed");
-      } else {
-        toast.error("Failed to remove item");
-      }
-    } catch {
-      toast.error("Network error");
+        toast.success(`${confirm.name} removed`);
+        setList((l) => l.filter((i) => i._id !== confirm._id));
+        setConfirm(null);
+      } else toast.error(response.data.message || "Failed to remove item");
+    } catch (err) {
+      toast.error(errMsg(err, "Failed to remove item"));
     } finally {
-      setRemoving(null);
+      setRemoving(false);
     }
   };
 
-  useEffect(() => { fetchlist(); }, []);
-  useEffect(() => {
-    document.title = "Food List ";
-  }, []);
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Lato:wght@300;400;700&display=swap');
+    <div className="page">
+      <PageHead crumbs={["Catalog", "Products"]} title="Products" sub={`${list.length} items on the menu`}>
+        {can("products.create") && (
+          <button className="btn btn-primary" onClick={() => navigate("/products/new")}>
+            <Icon name="plus" size={18} />
+            Add product
+          </button>
+        )}
+      </PageHead>
 
-        .food-list-wrapper {
-          font-family: 'Lato', sans-serif;
-          background: linear-gradient(135deg, #fdf6f0 0%, #fef9f5 50%, #f5f0ff 100%);
-          min-height: 100vh;
-          padding: 40px 32px;
-          color: #3d2e26;
-          width: 100%;
-          box-sizing: border-box;
-        }
-
-        .food-list-header {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          margin-bottom: 36px;
-        }
-
-        .food-list-header-icon {
-          width: 52px;
-          height: 52px;
-          background: linear-gradient(135deg, #ff8c61, #ff6b35);
-          border-radius: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 24px;
-          flex-shrink: 0;
-          box-shadow: 0 8px 20px rgba(255, 107, 53, 0.28);
-        }
-
-        .food-list-title {
-          font-family: 'Nunito', sans-serif;
-          font-size: 26px;
-          font-weight: 800;
-          color: #2d1f18;
-          letter-spacing: -0.4px;
-          margin: 0;
-        }
-
-        .food-list-subtitle {
-          font-size: 13px;
-          color: #a08878;
-          margin: 3px 0 0;
-          font-weight: 300;
-        }
-
-        .food-table-card {
-          background: #ffffff;
-          border-radius: 24px;
-          border: 1px solid #f0e8e0;
-          overflow: hidden;
-          box-shadow: 0 8px 40px rgba(180, 120, 80, 0.1), 0 2px 8px rgba(0,0,0,0.04);
-          width: 100%;
-          box-sizing: border-box;
-        }
-
-        .food-table-head {
-          display: grid;
-          grid-template-columns: 72px 1fr 160px 120px 90px;
-          align-items: center;
-          padding: 16px 28px;
-          background: linear-gradient(90deg, #fff8f4, #fdf4ff);
-          border-bottom: 1px solid #f0e8e0;
-          gap: 16px;
-          width: 100%;
-          box-sizing: border-box;
-        }
-
-        .food-table-head span {
-          font-family: 'Nunito', sans-serif;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-          color: #c4a090;
-        }
-
-        .food-table-head span:last-child {
-          text-align: center;
-        }
-
-        .food-table-row {
-          display: grid;
-          grid-template-columns: 72px 1fr 160px 120px 90px;
-          align-items: center;
-          padding: 14px 28px;
-          gap: 16px;
-          border-bottom: 1px solid #f8f0eb;
-          transition: background 0.2s ease;
-          animation: rowSlideIn 0.35s ease both;
-          width: 100%;
-          box-sizing: border-box;
-        }
-
-        .food-table-row:last-child {
-          border-bottom: none;
-        }
-
-        .food-table-row:hover {
-          background: #fff8f4;
-        }
-
-        @keyframes rowSlideIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .food-img-wrap {
-          width: 52px;
-          height: 52px;
-          border-radius: 14px;
-          overflow: hidden;
-          border: 2px solid #f0e8e0;
-          flex-shrink: 0;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-        }
-
-        .food-img-wrap img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-
-        .food-name {
-          font-size: 14px;
-          font-weight: 600;
-          color: #2d1f18;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .food-category-badge {
-          display: inline-flex;
-          align-items: center;
-          padding: 4px 12px;
-          background: linear-gradient(135deg, #fff0e8, #f8f0ff);
-          border: 1px solid #e8d8d0;
-          border-radius: 20px;
-          font-size: 12px;
-          color: #b07060;
-          font-weight: 600;
-          white-space: nowrap;
-        }
-
-        .food-price {
-          font-family: 'Nunito', sans-serif;
-          font-size: 15px;
-          font-weight: 800;
-          color: #ff6b35;
-        }
-
-        .remove-btn {
-          width: 34px;
-          height: 34px;
-          border-radius: 10px;
-          border: 1.5px solid #ffd0c0;
-          background: #fff5f0;
-          color: #e05030;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto;
-          transition: all 0.2s ease;
-          font-size: 18px;
-          line-height: 1;
-        }
-
-        .remove-btn:hover {
-          background: #ff6b35;
-          border-color: #ff6b35;
-          color: #fff;
-          transform: scale(1.1);
-          box-shadow: 0 4px 14px rgba(255, 107, 53, 0.35);
-        }
-
-        .remove-btn:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .remove-btn.spinning {
-          animation: spin 0.7s linear infinite;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
-        .food-empty {
-          padding: 60px 24px;
-          text-align: center;
-        }
-
-        .food-empty-icon {
-          font-size: 44px;
-          margin-bottom: 12px;
-          opacity: 0.4;
-        }
-
-        .food-empty-text {
-          color: #b09080;
-          font-size: 14px;
-        }
-
-        .skeleton-row {
-          display: grid;
-          grid-template-columns: 72px 1fr 160px 120px 90px;
-          align-items: center;
-          padding: 14px 28px;
-          gap: 16px;
-          border-bottom: 1px solid #f8f0eb;
-          width: 100%;
-          box-sizing: border-box;
-        }
-
-        .skeleton {
-          background: linear-gradient(90deg, #f5ede8 25%, #fdf5f0 50%, #f5ede8 75%);
-          background-size: 200% 100%;
-          animation: shimmer 1.4s infinite;
-          border-radius: 8px;
-        }
-
-        @keyframes shimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-
-        .food-count-pill {
-          display: inline-flex;
-          align-items: center;
-          padding: 3px 10px;
-          background: #fff0e8;
-          border: 1px solid #ffd8c0;
-          border-radius: 20px;
-          font-size: 12px;
-          color: #e07848;
-          font-weight: 700;
-          margin-left: 10px;
-          vertical-align: middle;
-        }
-      `}</style>
-
-      <div className="food-list-wrapper">
-        <div className="food-list-header">
-          <div className="food-list-header-icon">🍽️</div>
-          <div>
-            <p className="food-list-title">
-              Food Menu
-              {!loading && <span className="food-count-pill">{list.length}</span>}
-            </p>
-            <p className="food-list-subtitle">Manage your restaurant's food catalog</p>
+      <div className="card">
+        <div className="card-pad" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", paddingBottom: 12 }}>
+          <div className="tabs" style={{ flex: "1 1 100%" }}>
+            {categories.map(([c, n]) => (
+              <button key={c} className={cat === c ? "on" : ""} onClick={() => setCat(c)}>
+                {c}
+                <span className="count">{n}</span>
+              </button>
+            ))}
           </div>
+          <div className="search" style={{ flex: "1 1 260px" }}>
+            <Icon name="search" size={18} />
+            <input className="input" placeholder="Search products…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search products" />
+          </div>
+          <select className="select" style={{ flex: "0 1 200px" }} value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort">
+            <option value="newest">Newest first</option>
+            <option value="name">Name A–Z</option>
+            <option value="priceAsc">Price: low to high</option>
+            <option value="priceDesc">Price: high to low</option>
+          </select>
         </div>
 
-        <div className="food-table-card">
-          <div className="food-table-head">
-            <span>Image</span>
-            <span>Name</span>
-            <span>Category</span>
-            <span>Price</span>
-            <span>Action</span>
-          </div>
-
-          {loading ? (
-            [1, 2, 3].map(i => (
-              <div className="skeleton-row" key={i}>
-                <div className="skeleton" style={{ width: 52, height: 52, borderRadius: 12 }} />
-                <div className="skeleton" style={{ height: 14, width: '60%' }} />
-                <div className="skeleton" style={{ height: 26, width: 80, borderRadius: 20 }} />
-                <div className="skeleton" style={{ height: 14, width: 50 }} />
-                <div className="skeleton" style={{ height: 34, width: 34, borderRadius: 10, margin: '0 auto' }} />
-              </div>
-            ))
-          ) : list.length === 0 ? (
-            <div className="food-empty">
-              <div className="food-empty-icon">🍴</div>
-              <p className="food-empty-text">No food items found. Add some dishes to get started.</p>
-            </div>
-          ) : (
-            list.map((item, index) => (
-              <div
-                key={item._id}
-                className="food-table-row"
-                style={{ animationDelay: `${index * 40}ms` }}
-              >
-                <div className="food-img-wrap">
-                  <img src={`${url}/images/${item.image}`} alt={item.name} />
-                </div>
-                <span className="food-name">{item.name}</span>
-                <span>
-                  <span className="food-category-badge">{item.category}</span>
-                </span>
-                <span className="food-price">${item.price}</span>
-                <button
-                  className={`remove-btn ${removing === item._id ? 'spinning' : ''}`}
-                  onClick={() => remove_function(item._id)}
-                  disabled={removing === item._id}
-                  title="Remove item"
-                  aria-label={`Remove ${item.name}`}
-                >
-                  {removing === item._id ? '↻' : '×'}
-                </button>
-              </div>
-            ))
-          )}
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th className="right">Price</th>
+                <th>Added</th>
+                <th className="right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                [0, 1, 2, 3].map((i) => (
+                  <tr key={i}>
+                    <td colSpan={5}>
+                      <div className="skeleton" style={{ height: 44 }} />
+                    </td>
+                  </tr>
+                ))
+              ) : rows.length === 0 ? (
+                <tr>
+                  <td colSpan={5}>
+                    <Empty title={list.length ? "No products match" : "No products yet"}>
+                      {list.length ? "Try another search or category." : "Add your first dish to get started."}
+                    </Empty>
+                  </td>
+                </tr>
+              ) : (
+                rows.map((item) => (
+                  <tr key={item._id}>
+                    <td>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 220 }}>
+                        <img
+                          src={imageSrc(item.image)}
+                          alt=""
+                          loading="lazy"
+                          style={{ width: 48, height: 48, borderRadius: 12, objectFit: "cover", background: "var(--surface-2)", flexShrink: 0 }}
+                        />
+                        <div style={{ minWidth: 0 }}>
+                          <strong style={{ fontWeight: 600 }}>{item.name}</strong>
+                          <div
+                            className="muted"
+                            style={{ fontSize: 12, maxWidth: 360, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                          >
+                            {item.description}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="badge badge-blue">{item.category}</span>
+                    </td>
+                    <td className="right num">
+                      <strong>{money(item.price)}</strong>
+                    </td>
+                    <td className="muted">{dateShort(item.createdAt || parseInt(item._id.slice(0, 8), 16) * 1000)}</td>
+                    <td className="right" style={{ whiteSpace: "nowrap" }}>
+                      {can("products.update") && (
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => setEditing(item)}
+                          aria-label={`Edit ${item.name}`}
+                          style={{ marginRight: 6 }}
+                        >
+                          <Icon name="edit" size={16} />
+                          Edit
+                        </button>
+                      )}
+                      {can("products.delete") && (
+                        <button className="btn btn-ghost btn-sm" onClick={() => setConfirm(item)} aria-label={`Remove ${item.name}`}>
+                          <Icon name="trash" size={16} />
+                          Remove
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-    </>
+
+      {editing && (
+        <EditProductModal
+          item={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            fetchlist();
+          }}
+        />
+      )}
+
+      {confirm && (
+        <ConfirmDialog
+          danger
+          title="Remove product?"
+          confirmLabel="Remove"
+          busy={removing}
+          message={`“${confirm.name}” will be removed from the menu and its image deleted. Existing orders keep their copy of the item.`}
+          onConfirm={remove}
+          onClose={() => !removing && setConfirm(null)}
+        />
+      )}
+    </div>
   );
 };
 

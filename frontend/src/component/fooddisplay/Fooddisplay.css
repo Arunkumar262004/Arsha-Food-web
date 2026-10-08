@@ -1,16 +1,65 @@
-.Food-display{
-    margin-top: 30px;
+.food-display { padding-top: 48px; }
 
-}
-.Food-display h2{
-    font-size: max(2vw,24px);
-    font-weight: 600;
+.fd-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
 }
 
-.food-diplayed-list{
-    display: grid;
-    grid-template-columns: repeat(auto-fill,minmax(240px,1fr));
-    margin-top: 30px;
-    gap: 30px;
-    row-gap: 50px;
+.fd-tools {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
+
+.fd-sort {
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1.5.px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.fd-sort:focus, .fd-sort:hover {
+  border-color: var(--brand);
+}
+
+.fd-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+
+@media (max-width: 1200px) {
+  .fd-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+}
+
+@media (max-width: 860px) {
+  .fd-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+}
+
+@media (max-width: 640px) {
+  .food-display { padding-top: 32px; }
+  .fd-head { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 20px; }
+  .fd-tools { width: 100%; justify-content: space-between; }
+  .fd-sort { width: 100%; }
+  
+  .fd-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .fd-grid .food-body { padding: 12px 10px 14px; gap: 4px; }
+  .fd-grid .food-name { font-size: 14.5px; }
+  .fd-grid .food-desc { display: -webkit-box; -webkit-line-clamp: 1; font-size: 11.5px; min-height: 18px; }
+  .fd-grid .food-foot { flex-direction: column; align-items: stretch; gap: 8px; padding-top: 6px; }
+  .fd-grid .food-price { font-size: 17px; text-align: center; }
+  .fd-grid .food-add, .fd-grid .stepper { width: 100%; height: 38px; justify-content: center; font-size: 13.5px; }
+  .fd-grid .stepper { justify-content: space-between; }
+}
+
