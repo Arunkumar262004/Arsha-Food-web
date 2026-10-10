@@ -14,6 +14,7 @@ import reviewRouter from "./routes/Review-route.js";
 import { razorpayWebhook } from "./controllers/Order-controller.js";
 import { getSettings, PUBLIC_SETTING_KEYS } from "./models/Settingmodel.js";
 import { bootstrap } from "./services/bootstrap.js";
+import { listPublicBanners } from "./controllers/Banner-controller.js";
 
 // app config
 const app = express();
@@ -41,6 +42,7 @@ app.use("/api/cart",cart_router);
 app.use("/api/order",orderRouter)
 app.use("/api/placesingle/",place_buy_order)
 app.use("/api/reviews", reviewRouter);
+app.get("/api/banners", listPublicBanners);
 app.get("/api/settings/public", async (req, res) => {
     res.json({ success: true, data: await getSettings(PUBLIC_SETTING_KEYS) });
 });

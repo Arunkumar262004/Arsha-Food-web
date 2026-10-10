@@ -73,29 +73,10 @@ export const bootstrap = async () => {
         console.warn("Error seeding coupons:", err.message);
     }
 
-    // Seed 5-8 photos gallery for products
+    // (Removed: padding every product's gallery to 8 images from a fixed filename list — most of those
+    // files don't exist, so every dish showed broken or unrelated photos.)
     try {
-        const samplePool = [
-            "noodle_1.jpg",
-            "noodle_2.jpg",
-            "food_1.png",
-            "food_2.png",
-            "food_3.png",
-            "food_4.png",
-            "food_5.png",
-            "food_6.png",
-            "food_7.png",
-            "food_8.png",
-        ];
-        const foods = await FoodModel.find({});
-        for (const food of foods) {
-            if (!food.images || food.images.length < 5) {
-                const combined = [food.image, ...samplePool.filter((x) => x !== food.image)];
-                food.images = Array.from(new Set(combined)).slice(0, 8);
-                await food.save();
-            }
-        }
-
+        const foods = await FoodModel.find({}).limit(2);
         // Seed sample customer reviews if empty
         if ((await ReviewModel.countDocuments()) === 0 && foods.length > 0) {
             const firstDish = foods[0];

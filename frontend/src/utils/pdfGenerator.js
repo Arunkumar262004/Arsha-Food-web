@@ -1,10 +1,24 @@
 import { jsPDF } from "jspdf";
+import logoUrl from "../assets/logo.png";
+
+const loadImage = (src) => new Promise((resolve) => {
+  const img = new Image();
+  img.onload = () => resolve(img);
+  img.onerror = () => resolve(null);
+  img.src = src;
+});
+
+// Money with at most two decimals: 12.9 → "12.90", 129 → "129".
+const money = (n) => {
+  const v = Number(n) || 0;
+  return Number.isInteger(v) ? String(v) : v.toFixed(2);
+};
 
 /**
  * High-Resolution Client-Side Invoice PDF Generator
  * Renders a clean, official A4 Tax Invoice document and triggers direct PDF file download.
  */
-export const downloadInvoicePDF = (order, settings = {}) => {
+export const downloadInvoicePDF = async (order, settings = {}) => {
   const sym = settings.currencySymbol || "₹";
   const orderNumber = order.orderNumber || `#${(order._id || "").slice(-6).toUpperCase()}`;
   const fileName = `Invoice_${orderNumber.replace(/[^a-zA-Z0-9_-]/g, "")}.pdf`;
@@ -26,13 +40,28 @@ export const downloadInvoicePDF = (order, settings = {}) => {
   ctx.fillRect(0, 0, width, 140);
 
   // Brand Title
+  // Logo on a white rounded badge
+  const logo = await loadImage(logoUrl);
+  let brandX = 60;
+  if (logo) {
+    const bh = 96, bw = Math.round(bh * 1.6);
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(60, 22, bw, bh, 18); else ctx.rect(60, 22, bw, bh);
+    ctx.fill();
+    const scale = Math.min((bw - 24) / logo.width, (bh - 16) / logo.height);
+    const lw = logo.width * scale, lh = logo.height * scale;
+    ctx.drawImage(logo, 60 + (bw - lw) / 2, 22 + (bh - lh) / 2, lw, lh);
+    brandX = 60 + bw + 26;
+  }
+
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 38px 'Barlow', 'Outfit', sans-serif";
-  ctx.fillText("INOFEX RESTAURANT", 60, 65);
+  ctx.fillText("INOFEX RESTAURANT", brandX, 65);
 
   ctx.fillStyle = "#ebd7be";
   ctx.font = "500 18px sans-serif";
-  ctx.fillText("Fresh & Hygienic Gourmet Food Delivery", 60, 100);
+  ctx.fillText("Fresh & Hygienic Gourmet Food Delivery", brandX, 100);
 
   // Tax Invoice Tag (Top Right)
   ctx.fillStyle = "#ffffff";
@@ -156,16 +185,16 @@ export const downloadInvoicePDF = (order, settings = {}) => {
 
     ctx.textAlign = "right";
     ctx.font = "500 17px sans-serif";
-    ctx.fillText(`${sym}${item.price}`, 940, y + 34);
+    ctx.fillText(`${sym}${money(item.price)}`, 940, y + 34);
     
     ctx.font = "bold 17px sans-serif";
-    ctx.fillText(`${sym}${(item.price || 0) * (item.quantity || 1)}`, width - 80, y + 34);
+    ctx.fillText(`${sym}${money((item.price || 0) * (item.quantity || 1))}`, width - 80, y + 34);
 
     y += 56;
   });
 
   // Financial Breakdown Box (Bottom Right)
-  const summaryTop = Math.max(y + 30, 720);
+  const summaryTop = y + 30;
   const summaryWidth = 460;
   const summaryX = width - 60 - summaryWidth;
 
@@ -183,7 +212,7 @@ export const downloadInvoicePDF = (order, settings = {}) => {
     ctx.fillText("Items Subtotal", summaryX + 30, sumY);
     ctx.textAlign = "right";
     ctx.fillStyle = "#1e293b";
-    ctx.fillText(`${sym}${order.subtotal}`, width - 90, sumY);
+    ctx.fillText(`${sym}${money(order.subtotal)}`, width - 90, sumY);
     sumY += 34;
   }
 
@@ -192,7 +221,7 @@ export const downloadInvoicePDF = (order, settings = {}) => {
     ctx.textAlign = "left";
     ctx.fillText(`Coupon Discount (${order.couponCode || "COUPON"})`, summaryX + 30, sumY);
     ctx.textAlign = "right";
-    ctx.fillText(`-${sym}${order.discount}`, width - 90, sumY);
+    ctx.fillText(`-${sym}${money(order.discount)}`, width - 90, sumY);
     sumY += 34;
   }
 
@@ -201,7 +230,7 @@ export const downloadInvoicePDF = (order, settings = {}) => {
   ctx.fillText("Delivery Fee", summaryX + 30, sumY);
   ctx.textAlign = "right";
   ctx.fillStyle = order.deliveryFee === 0 ? "#16a34a" : "#1e293b";
-  ctx.fillText(order.deliveryFee === 0 ? "FREE" : `${sym}${order.deliveryFee || 40}`, width - 90, sumY);
+  ctx.fillText(order.deliveryFee === 0 ? "FREE" : `${sym}${money(order.deliveryFee ?? 40)}`, width - 90, sumY);
   sumY += 40;
 
   // Grand Total Line
@@ -216,7 +245,7 @@ export const downloadInvoicePDF = (order, settings = {}) => {
   ctx.font = "bold 22px sans-serif";
   ctx.fillText("Grand Total", summaryX + 30, sumY + 10);
   ctx.textAlign = "right";
-  ctx.fillText(`${sym}${order.amount}`, width - 90, sumY + 10);
+  ctx.fillText(`${sym}${money(order.amount)}`, width - 90, sumY + 10);
 
   // Footer Note & Stamp
   const footerY = height - 120;

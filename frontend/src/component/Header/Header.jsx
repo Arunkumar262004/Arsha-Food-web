@@ -1,65 +1,134 @@
-import React from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { StoreContext } from '../../context/Storecontext';
+import { whatsappLink } from '../../config/store';
+import { CartControl, VegMark } from '../Fooditem/Fooditem';
+import { SplitText, SpinBadge } from '../Motion';
+import Icon from '../Icon';
+import heroDish from '../../assets/hero_dish.jpg';
+import heroCoffee from '../../assets/hero_coffee_cup_big.jpg';
 import './Header.css';
-import heroCoffeeImg from '../../assets/hero_coffee_cup_big.jpg';
+
+const heroBiryani = 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=1600&q=70&auto=format&fit=crop';
+
+const SLIDES = [
+  {
+    tag: 'Slow-cooked on dum · Since day one',
+    lines: [['Royal'], ['dum'], ['biryani,', 'gold'], ['sealed'], ['with'], ['love', 'red']],
+    sub: 'Aged basmati, tender meat and whole spices, layered and slow-cooked in a sealed handi — the way it should be.',
+    image: heroBiryani, alt: 'Mutton dum biryani served on a platter', fit: 'dish', category: 'Biryani',
+  },
+  {
+    tag: 'Slow-cooked · Served hot',
+    lines: [['Fresh', 'gold'], ['food,'], ['cooked'], ['daily'], ['with'], ['care', 'red']],
+    sub: 'Hearty curries, crisp dosas, loaded snacks and indulgent desserts — prepared to order and delivered to your door.',
+    image: heroDish, alt: 'Steaming bowl of slow-cooked curry with fresh herbs', fit: 'dish', category: 'Meals',
+  },
+  {
+    tag: 'Small batch · Big flavour',
+    lines: [['Coffee'], ['brewed'], ['the'], ['slow', 'gold'], ['way', 'gold']],
+    sub: 'Hand-pulled espresso, iced lattes and thick shakes — crafted cup by cup to pair perfectly with your meal.',
+    image: heroCoffee, alt: 'Iced coffee topped with whipped cream and cocoa', fit: 'cup', category: 'Coffee & Tea',
+  },
+];
+const DURATION = 7000;
 
 const Header = () => {
+  const { food_list, imageSrc, settings } = useContext(StoreContext);
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const slide = SLIDES[index];
+
+  useEffect(() => {
+    if (paused) return;
+    const t = setTimeout(() => setIndex((i) => (i + 1) % SLIDES.length), DURATION);
+    return () => clearTimeout(t);
+  }, [index, paused]);
+
+  // The floating order card shows a real bestseller from the slide's category.
+  const pick = useMemo(() => {
+    const inCat = food_list.filter((f) => f.category === slide.category);
+    return inCat.find((f) => f.tag === 'Bestseller') || inCat[0] || food_list.find((f) => f.tag === 'Bestseller') || food_list[0];
+  }, [food_list, slide.category]);
+
+  const go = (dir) => setIndex((i) => (i + dir + SLIDES.length) % SLIDES.length);
+
   return (
-    <section className="coffee-hero-section">
-      <div className="coffee-hero-container">
-        
-        {/* Left Column: Compact Typography & Actions */}
-        <div className="coffee-hero-left">
-          <div className="coffee-display-title">
-            <span className="coffee-title-word">BREWED</span>
-            <span className="coffee-title-word">WITH</span>
-            <span className="coffee-title-word">CARE</span>
+    <section className="hero" aria-roledescription="carousel" aria-label="Featured">
+      {SLIDES.map((s, i) => (
+        <div key={i} className={`hero-media fit-${s.fit} ${i === index ? 'active' : ''}`} aria-hidden={i !== index}>
+          <img src={s.image} alt={i === index ? s.alt : ''} fetchPriority={i === 0 ? 'high' : undefined} />
+        </div>
+      ))}
+      <div className="hero-shade" />
+      <div className="hero-grain" />
+
+      <div className="container hero-inner">
+        {/* key forces the text to re-mount so the word reveal replays on each slide */}
+        <div className="hero-copy" key={index}>
+          <span className="hero-tag"><Icon name="sparkle" size={14} />{slide.tag}</span>
+          <h1 className="hero-title">
+            {slide.lines.map(([word, tone], i) => (
+              <span key={i} className={`split-word ${tone ? `tone-${tone}` : ''}`}>
+                <span style={{ '--d': `${0.15 + i * 0.08}s` }}>{word}</span>
+              </span>
+            )).reduce((acc, el, i) => (i ? [...acc, ' ', el] : [el]), [])}
+          </h1>
+          <p className="hero-sub"><SplitText text={slide.sub} delay={0.55} step={0.015} /></p>
+          <div className="hero-ctas">
+            <a href="#menu" className="btn btn-gold btn-lg">Order now <Icon name="arrowRight" size={18} /></a>
+            <a href={whatsappLink()} target="_blank" rel="noreferrer" className="btn btn-glass btn-lg">
+              <Icon name="whatsapp" size={20} />Order on WhatsApp
+            </a>
           </div>
-
-          <p className="coffee-hero-sub">
-            Savor the layered notes of every roast. From bean to brew, crafted with care in every cup.
-          </p>
-
-          <div className="coffee-hero-buttons">
-            <a href="#menu" className="coffee-btn-primary">SHOP NOW</a>
-            <a href="#menu" className="coffee-btn-secondary">LEARN MORE</a>
+          <div className="hero-stats">
+            <span><strong>{food_list.length || '70'}+</strong> dishes</span>
+            <span className="dot" />
+            <span><strong>25–35</strong> min delivery</span>
+            <span className="dot" />
+            <span><strong>Free</strong> delivery over {settings.currencySymbol}{settings.freeDeliveryThreshold}</span>
           </div>
+        </div>
 
-          <div className="coffee-hero-footer-row">
-            {/* SVG QR Code */}
-            <div className="coffee-qr-box">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h3v2h-3v-2zm-3 0h2v3h-2v-3zm3 3h3v5h-3v-5zm-3 2h2v3h-2v-3zm-3-2h2v2h-2v-2zm0 3h2v2h-2v-2z" />
-              </svg>
-            </div>
-
-            <div className="coffee-social-trust">
-              <div className="coffee-social-icons">
-                <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook">
-                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H7.5v-3H10V9.5C10 7.01 11.49 5.65 13.75 5.65c1.08 0 2.22.19 2.22.19v2.44h-1.25c-1.23 0-1.62.77-1.62 1.56V12h2.77l-.44 3h-2.33v6.8c4.56-.93 8-4.96 8-9.8z"/></svg>
-                </a>
-                <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram">
-                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                </a>
+        {pick && (
+          <div className="hero-card" key={`card-${index}`}>
+            <Link to={`/viewproduct/${pick._id}`} className="hero-card-img"><img src={imageSrc(pick.image, 220)} alt="" /></Link>
+            <div className="hero-card-body">
+              <span className="hero-card-label"><VegMark isVeg={pick.isVeg !== false} size={13} />{pick.tag || 'Popular'} today</span>
+              <Link to={`/viewproduct/${pick._id}`} className="hero-card-name">{pick.name}</Link>
+              <div className="hero-card-foot">
+                <strong>{settings.currencySymbol}{pick.price}</strong>
+                <CartControl id={pick._id} name={pick.name} />
               </div>
-              <span>Trusted by 10k+ daily brewers</span>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Right Column: Giant Cup Visual & Vertical Badge */}
-        <div className="coffee-hero-right">
-          <div className="coffee-badge-vertical">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3" />
-            </svg>
-            <span className="coffee-vertical-text">Small batch. Big flavor.</span>
+        <ul className="hero-trust">
+          <li><Icon name="shield" size={20} />Hygienic kitchen</li>
+          <li><Icon name="flame" size={20} />Cooked fresh daily</li>
+          <li><Icon name="truck" size={20} />Fast delivery</li>
+        </ul>
+
+        <SpinBadge text="FRESH • HOT • HANDMADE • FRESH • HOT • HANDMADE • " size={128} className="hero-badge">
+          <Icon name="cup" size={34} />
+        </SpinBadge>
+
+        <div className="hero-controls">
+          <span className="hero-count"><strong>{String(index + 1).padStart(2, '0')}</strong> / {String(SLIDES.length).padStart(2, '0')}</span>
+          <button onClick={() => go(-1)} aria-label="Previous slide"><Icon name="arrowLeft" size={18} /></button>
+          <div className="hero-dots">
+            {SLIDES.map((_, i) => (
+              <button key={i} className={i === index ? 'active' : ''} onClick={() => setIndex(i)} aria-label={`Go to slide ${i + 1}`}>
+                {i === index && <span style={{ animationDuration: `${DURATION}ms`, animationPlayState: paused ? 'paused' : 'running' }} />}
+              </button>
+            ))}
           </div>
-
-          <div className="coffee-img-wrapper">
-            <img src={heroCoffeeImg} alt="Giant Brewed Gourmet Iced Coffee Cup" className="coffee-hero-img" />
-          </div>
+          <button onClick={() => setPaused((p) => !p)} aria-label={paused ? 'Play slideshow' : 'Pause slideshow'}>
+            <Icon name={paused ? 'play' : 'pause'} size={16} />
+          </button>
+          <button onClick={() => go(1)} aria-label="Next slide"><Icon name="arrowRight" size={18} /></button>
         </div>
-
       </div>
     </section>
   );

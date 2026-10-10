@@ -33,6 +33,17 @@ const P = {
   play: <><polygon points="6,4 18,12 6,20" fill="currentColor" /></>,
   arrowUpRight: <><path d="M7 17L17 7M7 7h10v10" /></>,
   star: <><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" /></>,
+  chevronLeft: <><path d="m15 18-6-6 6-6" /></>,
+  chevronRight: <><path d="m9 18 6-6-6-6" /></>,
+  pause: <><path d="M9 5v14M15 5v14" /></>,
+  sparkle: <><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8" /></>,
+  cup: <><path d="M17 8h1a4 4 0 0 1 0 8h-1" /><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" /><path d="M6 2v2M10 2v2M14 2v2" /></>,
+  flame: <><path d="M12 22c4 0 7-2.7 7-7 0-4-3-6.5-4-10-2 2-3 3.5-3 6-1.5-1-2-2.5-2-4C7 9 5 11.5 5 15c0 4.3 3 7 7 7Z" /></>,
+  award: <><circle cx="12" cy="8" r="6" /><path d="M8.2 13 7 22l5-3 5 3-1.2-9" /></>,
+  headset: <><path d="M3 14v-2a9 9 0 0 1 18 0v2" /><path d="M21 15a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2ZM3 15a2 2 0 0 0 2 2h1v-6H5a2 2 0 0 0-2 2Z" /><path d="M18 17v1a3 3 0 0 1-3 3h-3" /></>,
+  gift: <><rect x="3" y="8" width="18" height="4" rx="1" /><path d="M12 8v13M19 12v9H5v-9" /><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5" /></>,
+  card: <><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20M6 15h4" /></>,
+  whatsapp: <><path d="M3.5 20.5 5 16a8.5 8.5 0 1 1 3.2 3.2Z" /><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1.3-1.3-2-1-1 .8a4 4 0 0 1-2.3-2.3l.8-1-1-2Z" /></>,
 };
 
 const Icon = ({ name, size = 20, stroke = 1.9, className, style }) => (

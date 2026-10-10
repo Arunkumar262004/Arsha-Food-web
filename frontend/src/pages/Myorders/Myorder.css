@@ -43,7 +43,7 @@
 .order-card:hover {
   box-shadow: 0 8px 28px rgba(43, 26, 16, 0.08);
   transform: translateY(-2px);
-  border-color: rgba(242, 107, 29, 0.3);
+  border-color: rgba(122, 74, 33, 0.3);
 }
 
 /* PRODUCT IMAGE */
@@ -165,9 +165,9 @@
 
 .status-orange {
   background: #ffe9da;
-  color: #d9560c;
+  color: #4a2c14;
 }
-.status-orange .status-dot { background: #f26b1d; box-shadow: 0 0 6px #f26b1d; }
+.status-orange .status-dot { background: #7a4a21; box-shadow: 0 0 6px #7a4a21; }
 
 .status-amber {
   background: #fef3c7;
@@ -192,9 +192,9 @@
   height: 42px;
   padding: 0 16px;
   border-radius: 999px;
-  border: 1.5px solid var(--brand, #f26b1d);
+  border: 1.5px solid var(--brand, #7a4a21);
   background: #ffffff;
-  color: var(--brand, #f26b1d);
+  color: var(--brand, #7a4a21);
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
@@ -209,7 +209,7 @@
 .track-btn:hover {
   background: var(--brand-soft, #ffe9da);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(242, 107, 29, 0.2);
+  box-shadow: 0 4px 12px rgba(122, 74, 33, 0.2);
 }
 
 .empty-orders-card {

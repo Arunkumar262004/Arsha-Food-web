@@ -1,86 +1,71 @@
-import React from 'react';
+import React, { useContext, useMemo, useRef } from 'react';
+import { StoreContext } from '../../context/Storecontext';
+import ProductRail from '../ProductRail/ProductRail';
+import { Reveal } from '../Motion';
+import Icon from '../Icon';
+import { catLabel, recommended, useCategories, withFallback } from './categories';
 import './Explorer.css';
-import { menu_list } from '../../assets/assets';
-
-const CATEGORY_IMAGES = {
-  Salad: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800",
-  Rolls: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=800",
-  Deserts: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=800",
-  Sandwich: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800",
-  Cake: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800",
-  "Pure Veg": "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800",
-  Pasta: "https://images.unsplash.com/photo-1621996346565-e3d5d6281292?w=800",
-  Noodles: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=800"
-};
 
 function Explorer({ Category, Setcategory }) {
-  const handleSelect = (cat) => {
-    Setcategory(prev => prev === cat ? 'All' : cat);
-    // Smooth scroll down to dishes grid
-    const dishesEl = document.getElementById('dishes');
-    if (dishesEl) dishesEl.scrollIntoView({ behavior: 'smooth' });
-  };
+  const { food_list, foodLoading } = useContext(StoreContext);
+  const categories = useCategories();
+  const strip = useRef(null);
+
+  const railItems = useMemo(
+    () => recommended(food_list.filter((f) => Category === 'All' || f.category === Category), true).slice(0, 12),
+    [food_list, Category]
+  );
+  const scroll = (dir) => strip.current?.scrollBy({ left: dir * strip.current.clientWidth * 0.8, behavior: 'smooth' });
 
   return (
-    <section className='explore container' id='menu'>
-      <div className="section-head">
+    <section className="section container" id="categories">
+      <Reveal className="cat-head">
         <div>
-          <div className="section-eyebrow">Handcrafted Flavors</div>
-          <h2 className="section-title">Shop by Category</h2>
-          <p className="section-sub">Explore our artisanal selection of freshly prepared delicacies.</p>
+          <span className="section-tag">Handcrafted in our kitchen</span>
+          <h2 className="section-title">What are you <em>craving</em> today?</h2>
+          <p className="section-sub">{categories.length} categories · from dum biryani and dosas to cold brews and sundaes.</p>
+        </div>
+        <div className="cat-arrows">
+          <button onClick={() => scroll(-1)} aria-label="Previous categories"><Icon name="arrowLeft" size={18} /></button>
+          <button onClick={() => scroll(1)} aria-label="Next categories"><Icon name="arrowRight" size={18} /></button>
+        </div>
+      </Reveal>
+
+      <div className="cat-strip" ref={strip} role="tablist" aria-label="Categories">
+        {foodLoading && !categories.length
+          ? Array.from({ length: 7 }, (_, i) => <div key={i} className="cat-card skeleton" />)
+          : categories.map((c, i) => {
+            const active = Category === c.name;
+            return (
+              <button key={c.name} role="tab" aria-selected={active} className={`cat-card ${active ? 'active' : ''}`}
+                style={{ '--d': `${Math.min(i, 8) * 0.05}s` }}
+                onClick={() => Setcategory((prev) => (prev === c.name ? 'All' : c.name))}>
+                <img src={c.photo} alt="" loading="lazy" onError={withFallback(c.fallback)} />
+                <span className="cat-card-shade" />
+                {active && <span className="cat-card-check"><Icon name="check" size={14} stroke={3} /></span>}
+                <span className="cat-card-text">
+                  <strong>{c.label}</strong>
+                  <small>{c.count} dish{c.count === 1 ? '' : 'es'}</small>
+                </span>
+                <span className="cat-card-go"><Icon name="arrowUpRight" size={16} /></span>
+              </button>
+            );
+          })}
+      </div>
+
+      <div className="cat-rail-head">
+        <div>
+          <h3>{Category === 'All' ? 'Popular picks' : `Best of ${catLabel(Category)}`}</h3>
+          <p>{Category === 'All' ? 'Our most-loved dishes, cooked fresh to order' : `Freshly made ${catLabel(Category).toLowerCase()}, ready in minutes`}</p>
+        </div>
+        <div className="cat-rail-actions">
+          {Category !== 'All' && <button className="cat-clear" onClick={() => Setcategory('All')}><Icon name="close" size={14} />{catLabel(Category)}</button>}
+          <a href="#menu" className="cat-see-all">View full menu <Icon name="arrowRight" size={16} /></a>
         </div>
       </div>
-
-      {/* Visual Category Banner Grid (Inspired by Breadly design mockup) */}
-      <div className="category-banner-grid">
-        {menu_list.map((item) => {
-          const bgImage = CATEGORY_IMAGES[item.menu_name] || item.menu_image;
-          const isActive = Category === item.menu_name;
-          return (
-            <div
-              key={item.menu_name}
-              className={`cat-card ${isActive ? 'active' : ''}`}
-              onClick={() => handleSelect(item.menu_name)}
-            >
-              <img src={bgImage} alt={item.menu_name} className="cat-card-bg" loading="lazy" />
-              <div className="cat-card-overlay" />
-              <div className="cat-card-content">
-                <span className="cat-card-badge">Fresh Prep</span>
-                <h3 className="cat-card-title">{item.menu_name}</h3>
-                <span className="cat-card-link">
-                  {isActive ? 'Showing dishes ✓' : 'Explore Category →'}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Category Filter Pills */}
-      <div className='explore-pills' role="tablist" aria-label="Category filter pills">
-        <button
-          role="tab"
-          aria-selected={Category === 'All'}
-          className={`cat-pill ${Category === 'All' ? 'active' : ''}`}
-          onClick={() => Setcategory('All')}
-        >
-          All Items
-        </button>
-        {menu_list.map((item) => (
-          <button
-            key={item.menu_name}
-            role="tab"
-            aria-selected={Category === item.menu_name}
-            className={`cat-pill ${Category === item.menu_name ? 'active' : ''}`}
-            onClick={() => Setcategory(prev => prev === item.menu_name ? 'All' : item.menu_name)}
-          >
-            {item.menu_name}
-          </button>
-        ))}
-      </div>
+      <ProductRail items={railItems} loading={foodLoading} label={Category === 'All' ? 'popular dishes' : `${catLabel(Category)} dishes`} />
     </section>
   );
 }
 
 export default Explorer;
-

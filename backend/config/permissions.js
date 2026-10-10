@@ -8,6 +8,7 @@ export const PERMISSION_GROUPS = {
   Customers: ["customers.view"],
   Payments: ["payments.view"],
   Marketing: ["coupons.view", "coupons.manage"],
+  Content: ["content.view", "content.manage"],
   Notifications: ["notifications.view", "notifications.manage"],
   Reports: ["reports.view"],
   Administration: [
@@ -47,7 +48,8 @@ export const DEFAULT_ROLES = [
   {
     slug: "marketing-manager", name: "Marketing Manager",
     permissions: ["dashboard.view", "products.view", "customers.view", "reports.view",
-      "coupons.view", "coupons.manage", "notifications.view", "notifications.manage"],
+      "coupons.view", "coupons.manage", "notifications.view", "notifications.manage",
+      "content.view", "content.manage"],
   },
   {
     slug: "accountant", name: "Accountant",

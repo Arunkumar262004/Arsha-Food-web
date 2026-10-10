@@ -1,135 +1,91 @@
-import React, { useContext, useEffect, useState } from 'react';
-import './Cart.css';
-import { useNavigate } from 'react-router-dom';
+import React, { useContext, useEffect, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { StoreContext } from '../../context/Storecontext';
+import { CartControl, VegMark } from '../../component/Fooditem/Fooditem';
+import { catLabel } from '../../component/Explorermenu/categories';
+import { CheckoutSteps, CouponBox, EmptyCart, PriceSummary, useTotals } from '../../component/Checkout/Checkout';
+import ProductRail from '../../component/ProductRail/ProductRail';
+import Icon from '../../component/Icon';
+import './Cart.css';
+
+const ADD_ONS = ['Cool Drinks', 'Juices & Shakes', 'Deserts', 'Coffee & Tea'];
 
 const Cart = () => {
   const navigate = useNavigate();
-  const [promoCode, setPromoCode] = useState('');
+  const { cartItems, cartLoaded, food_list, foodLoading, clearItem, get_total_Cart_amount, imageSrc, settings, token, setShowLogin, cartCount } = useContext(StoreContext);
+  const cur = settings.currencySymbol;
 
-  useEffect(() => {
-    document.title = "Your Cart — Arsha Food";
-  }, []);
+  useEffect(() => { document.title = 'Your cart — Arsha'; }, []);
 
-  const {
-    cartItems,
-    food_list,
-    removeItemFromCart,
-    get_total_Cart_amount,
-    imageSrc,
-    settings,
-    token,
-    setShowLogin,
-    publicCoupons
-  } = useContext(StoreContext);
+  const lines = food_list.filter((f) => cartItems[f._id] > 0);
+  const totals = useTotals(get_total_Cart_amount());
+  const items = lines.map((f) => ({ id: f._id, quantity: cartItems[f._id] }));
 
-  const sym = settings.currencySymbol;
-  const subtotal = get_total_Cart_amount();
-  const deliveryFee = subtotal === 0 ? 0 : settings.deliveryFee;
+  // Drinks and desserts that aren't in the cart yet — the classic "complete your meal" add-ons.
+  const addOns = useMemo(
+    () => food_list.filter((f) => ADD_ONS.includes(f.category) && !cartItems[f._id]).slice(0, 10),
+    [food_list, cartItems]
+  );
 
-  const handleCheckout = () => {
-    if (!token) {
-      setShowLogin(true);
-      return;
-    }
+  const checkout = () => {
+    if (!token) { setShowLogin(true); return; }
     navigate('/order');
   };
 
+  if (!foodLoading && cartLoaded && lines.length === 0) {
+    return <div className="container co-page"><EmptyCart /></div>;
+  }
+
   return (
-    <div className='cart container'>
-      <div className="cart-items">
-        <div className="cart-items-title">
-          <p>Items</p>
-          <p>Title</p>
-          <p>Price</p>
-          <p>Quantity</p>
-          <p>Total</p>
-          <p>Remove</p>
+    <div className="container co-page">
+      <div className="co-title-row">
+        <div>
+          <h1 className="co-title">Your cart</h1>
+          <p>{cartCount} item{cartCount === 1 ? '' : 's'} · cooked fresh once you order</p>
         </div>
-        <br />
-        <hr />
-        {food_list.map((item) => {
-          if (cartItems[item._id] > 0)
-            return (
-              <div key={item._id}>
-                <div className="cart-items-title cart-items-item">
-                  <img src={imageSrc(item.image)} alt='' />
-                  <p>{item.name}</p>
-                  <p>{sym}{item.price}</p>
-                  <p>{cartItems[item._id]}</p>
-                  <p>{sym}{item.price * cartItems[item._id]}</p>
-                  <p onClick={() => removeItemFromCart(item._id)} className='cross'>x</p>
-                </div>
-                <hr />
-              </div>
-            );
-          return null;
-        })}
+        <CheckoutSteps step={0} />
       </div>
-      <div className="cart-bottom">
-        <div className="cart-total">
-          <h2>Cart Totals</h2>
-          <div>
-            <div className="cart-total-details">
-              <p>Subtotal</p>
-              <p>{sym}{subtotal}</p>
+
+      <div className="co-layout">
+        <div className="co-card cart-list">
+          {lines.map((f) => (
+            <div className="cart-line" key={f._id}>
+              <Link to={`/viewproduct/${f._id}`} className="cart-thumb"><img src={imageSrc(f.image, 200)} alt="" /></Link>
+              <div className="cart-info">
+                <span className="cart-meta"><VegMark isVeg={f.isVeg !== false} size={14} />{catLabel(f.category)}</span>
+                <Link to={`/viewproduct/${f._id}`} className="cart-name">{f.name}</Link>
+                <span className="cart-each">{cur}{f.price} each</span>
+              </div>
+              <div className="cart-qty"><CartControl id={f._id} name={f.name} /></div>
+              <div className="cart-total">{cur}{f.price * cartItems[f._id]}</div>
+              <button className="cart-remove" onClick={() => clearItem(f._id)} aria-label={`Remove ${f.name}`}><Icon name="trash" size={18} /></button>
             </div>
-            <hr />
-            <div className="cart-total-details">
-              <p>Delivery Fee</p>
-              <p>{sym}{deliveryFee}</p>
-            </div>
-            <hr />
-            <div className="cart-total-details">
-              <p>Total</p>
-              <p>{sym}{subtotal + deliveryFee}</p>
-            </div>
-          </div>
-          <button onClick={handleCheckout}>PROCEED TO CHECKOUT</button>
+          ))}
+          <Link to="/#menu" className="co-edit cart-more"><Icon name="plus" size={16} />Add more items</Link>
         </div>
 
-        <div className="cart-promo-code">
-          <div>
-            <p>If you have promo code Enter it here</p>
-            <div className="cart-promo-code-input">
-              <input
-                type="text"
-                placeholder='Enter promo code'
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-              />
-              <button onClick={() => alert(`Coupon ${promoCode || 'code'} will be validated at checkout!`)}>Apply</button>
-            </div>
-
-            {publicCoupons && publicCoupons.length > 0 && (
-              <div style={{ marginTop: 16 }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#f26b1d', marginBottom: 8 }}>Available Coupons:</p>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {publicCoupons.map((c) => (
-                    <button
-                      key={c._id || c.code}
-                      type="button"
-                      onClick={() => setPromoCode(c.code)}
-                      style={{
-                        background: '#ffe9da',
-                        color: '#d9560c',
-                        border: '1px border #f26b1d',
-                        borderRadius: 8,
-                        padding: '4px 10px',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {c.code} ({c.type === "percentage" ? `${c.value}% OFF` : `₹${c.value} OFF`})
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <aside className="co-side">
+          <CouponBox items={items} subtotal={totals.subtotal} />
+          <PriceSummary totals={totals} itemCount={cartCount}>
+            <button className="btn btn-primary btn-block co-pay" onClick={checkout}>
+              <span>{cur}{totals.total}</span>
+              <span className="co-pay-label">{token ? 'Proceed to checkout' : 'Sign in to checkout'}<Icon name="arrowRight" size={18} /></span>
+            </button>
+          </PriceSummary>
+        </aside>
       </div>
+
+      {addOns.length > 0 && (
+        <section className="cart-addons">
+          <div className="section-head">
+            <div>
+              <div className="section-eyebrow">Complete your meal</div>
+              <h2 className="section-title">Add a drink or <em>dessert</em></h2>
+            </div>
+          </div>
+          <ProductRail items={addOns} label="add-ons" />
+        </section>
+      )}
     </div>
   );
 };

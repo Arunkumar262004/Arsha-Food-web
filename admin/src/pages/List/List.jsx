@@ -8,14 +8,9 @@ import Icon from "../../components/Icon";
 import { useAuth } from "../../context/AuthContext";
 
 const CATEGORY_OPTIONS = [
-  "Salad",
-  "Rolls",
-  "Deserts",
-  "Sandwich",
-  "Cake",
-  "Pure Veg",
-  "Pasta",
-  "Noodles",
+  "Biryani", "Meals", "South Indian", "Starters", "Snacks", "Burgers & Pizza",
+  "Rolls", "Sandwich", "Noodles", "Pasta", "Pure Veg", "Salad",
+  "Cool Drinks", "Juices & Shakes", "Coffee & Tea", "Cake", "Deserts",
 ];
 
 const EditProductModal = ({ item, onClose, onSaved }) => {
@@ -23,6 +18,28 @@ const EditProductModal = ({ item, onClose, onSaved }) => {
   const [description, setDescription] = useState(item.description || "");
   const [category, setCategory] = useState(item.category || "Salad");
   const [price, setPrice] = useState(item.price || "");
+
+  const getIds = (arr) => {
+    if (!arr || !Array.isArray(arr)) return [];
+    return arr.map((x) => (typeof x === "object" && x._id ? x._id : x));
+  };
+
+  const [upsells, setUpsells] = useState(getIds(item.upsells));
+  const [crossSells, setCrossSells] = useState(getIds(item.crossSells));
+  const [relatedProducts, setRelatedProducts] = useState(getIds(item.relatedProducts));
+  const [existingFoods, setExistingFoods] = useState([]);
+
+  useEffect(() => {
+    api.get("/api/food/list").then((res) => {
+      if (res.data.success) {
+        setExistingFoods(res.data.data.filter((f) => f._id !== item._id));
+      }
+    });
+  }, [item._id]);
+
+  const toggleSelection = (list, setList, id) => {
+    setList((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
 
   const initialExisting = item.images && item.images.length ? item.images : (item.image ? [item.image] : []);
   const [existingImages, setExistingImages] = useState(initialExisting);
@@ -59,6 +76,9 @@ const EditProductModal = ({ item, onClose, onSaved }) => {
       formData.append("category", category);
       formData.append("price", price);
       formData.append("existingImages", JSON.stringify(existingImages));
+      formData.append("upsells", JSON.stringify(upsells));
+      formData.append("crossSells", JSON.stringify(crossSells));
+      formData.append("relatedProducts", JSON.stringify(relatedProducts));
 
       newImageFiles.forEach((file) => {
         formData.append("images", file);
@@ -66,7 +86,7 @@ const EditProductModal = ({ item, onClose, onSaved }) => {
 
       const response = await api.post("/api/food/update", formData);
       if (response.data.success) {
-        toast.success("Product updated successfully with multiple photos!");
+        toast.success("Product updated successfully with associations!");
         onSaved();
       } else {
         toast.error(response.data.message || "Failed to update product");
@@ -200,6 +220,91 @@ const EditProductModal = ({ item, onClose, onSaved }) => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
+        </div>
+
+        {/* PRODUCT ASSOCIATIONS IN EDIT MODAL */}
+        <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 14, padding: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ fontWeight: 700, fontSize: 13.5, color: 'var(--ink)' }}>
+            🔗 Linked Recommendations & Associations
+          </div>
+
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-2)', display: 'block', marginBottom: 4 }}>
+              🍱 Cross-Sells ("Complete Your Meal" - Dips, Drinks, Sides)
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 100, overflowY: 'auto', padding: 2 }}>
+              {existingFoods.map((f) => {
+                const selected = crossSells.includes(f._id);
+                return (
+                  <button
+                    key={f._id}
+                    type="button"
+                    onClick={() => toggleSelection(crossSells, setCrossSells, f._id)}
+                    style={{
+                      background: selected ? '#f26b1d' : '#fff',
+                      color: selected ? '#fff' : '#334155',
+                      border: selected ? '1px solid #f26b1d' : '1px solid #cbd5e1',
+                      borderRadius: 16, padding: '3px 8px', fontSize: 11.5, fontWeight: 500, cursor: 'pointer'
+                    }}
+                  >
+                    {selected ? '✓ ' : '+ '}{f.name} (₹{f.price})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-2)', display: 'block', marginBottom: 4 }}>
+              ⭐ Up-Sells (Premium/Larger Combo Alternatives)
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 100, overflowY: 'auto', padding: 2 }}>
+              {existingFoods.map((f) => {
+                const selected = upsells.includes(f._id);
+                return (
+                  <button
+                    key={f._id}
+                    type="button"
+                    onClick={() => toggleSelection(upsells, setUpsells, f._id)}
+                    style={{
+                      background: selected ? '#0284c7' : '#fff',
+                      color: selected ? '#fff' : '#334155',
+                      border: selected ? '1px solid #0284c7' : '1px solid #cbd5e1',
+                      borderRadius: 16, padding: '3px 8px', fontSize: 11.5, fontWeight: 500, cursor: 'pointer'
+                    }}
+                  >
+                    {selected ? '✓ ' : '+ '}{f.name} (₹{f.price})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-2)', display: 'block', marginBottom: 4 }}>
+              🍲 Related Products ("You Might Also Like")
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 100, overflowY: 'auto', padding: 2 }}>
+              {existingFoods.map((f) => {
+                const selected = relatedProducts.includes(f._id);
+                return (
+                  <button
+                    key={f._id}
+                    type="button"
+                    onClick={() => toggleSelection(relatedProducts, setRelatedProducts, f._id)}
+                    style={{
+                      background: selected ? '#16a34a' : '#fff',
+                      color: selected ? '#fff' : '#334155',
+                      border: selected ? '1px solid #16a34a' : '1px solid #cbd5e1',
+                      borderRadius: 16, padding: '3px 8px', fontSize: 11.5, fontWeight: 500, cursor: 'pointer'
+                    }}
+                  >
+                    {selected ? '✓ ' : '+ '}{f.name} (₹{f.price})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </form>
     </Modal>

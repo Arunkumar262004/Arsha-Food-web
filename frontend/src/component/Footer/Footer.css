@@ -1,7 +1,7 @@
 /* LUXURY DARK FOOTER DESIGN SYSTEM */
 
 .footer {
-  background: linear-gradient(180deg, #0f172a 0%, #090d16 100%);
+  background: linear-gradient(180deg, #24150c 0%, var(--espresso) 100%);
   color: #94a3b8;
   padding: 64px 0 32px;
   margin-top: 80px;
@@ -18,8 +18,8 @@
 
 /* TOP NEWSLETTER CARD */
 .footer-newsletter {
-  background: linear-gradient(135deg, rgba(242, 107, 29, 0.15) 0%, rgba(217, 86, 12, 0.05) 100%);
-  border: 1px solid rgba(242, 107, 29, 0.25);
+  background: linear-gradient(135deg, rgba(122, 74, 33, 0.15) 0%, rgba(210, 154, 74, 0.06) 100%);
+  border: 1px solid rgba(122, 74, 33, 0.25);
   border-radius: 24px;
   padding: 32px 40px;
   display: flex;
@@ -54,7 +54,7 @@
   height: 48px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(0, 0, 0, 0.25);
   padding: 0 20px;
   color: #ffffff;
   font-size: 14px;
@@ -63,8 +63,8 @@
 }
 
 .fn-form input:focus {
-  border-color: #f26b1d;
-  box-shadow: 0 0 0 3px rgba(242, 107, 29, 0.2);
+  border-color: #7a4a21;
+  box-shadow: 0 0 0 3px rgba(122, 74, 33, 0.2);
 }
 
 .fn-form button {
@@ -72,18 +72,17 @@
   padding: 0 24px;
   border-radius: 999px;
   border: none;
-  background: #f26b1d;
-  color: #ffffff;
+  background: var(--gold); color: var(--espresso);
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(242, 107, 29, 0.4);
+  box-shadow: 0 4px 14px rgba(122, 74, 33, 0.4);
 }
 
 .fn-form button:hover {
-  background: #d9560c;
+  background: #4a2c14;
   transform: translateY(-1px);
 }
 
@@ -153,11 +152,10 @@
 }
 
 .social-icon:hover {
-  background: #f26b1d;
-  color: #ffffff;
-  border-color: #f26b1d;
+  background: var(--gold); color: var(--espresso);
+  border-color: #7a4a21;
   transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(242, 107, 29, 0.35);
+  box-shadow: 0 6px 16px rgba(122, 74, 33, 0.35);
 }
 
 /* LINKS */
@@ -186,7 +184,7 @@
 }
 
 .footer-links li a:hover {
-  color: #f26b1d;
+  color: #7a4a21;
   padding-left: 4px;
 }
 

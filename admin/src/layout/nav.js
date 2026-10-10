@@ -9,7 +9,12 @@ export const NAV = [
     ],
   },
   { section: "Sales", items: [{ to: "/orders", label: "Orders", icon: "bag", perm: "orders.view" }] },
-  { section: "Marketing", items: [{ to: "/coupons", label: "Coupons", icon: "tag", perm: "coupons.view" }] },
+  {
+    section: "Marketing", items: [
+      { to: "/coupons", label: "Coupons", icon: "tag", perm: "coupons.view" },
+      { to: "/banners", label: "Home Banners", icon: "image", perm: "content.view" },
+    ],
+  },
   {
     section: "Notifications", items: [
       { to: "/emails", label: "Email Templates", icon: "template", perm: "notifications.view", end: true },

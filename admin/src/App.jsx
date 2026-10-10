@@ -18,6 +18,7 @@ import Coupons from './pages/Coupons/Coupons';
 import Emails from './pages/Emails/Emails';
 import Settings from './pages/Settings/Settings';
 import Reviews from './pages/Reviews/Reviews';
+import Banners from './pages/Banners/Banners';
 import { Empty } from './components/ui';
 
 const ROUTES = [
@@ -28,6 +29,7 @@ const ROUTES = [
   { path: '/orders', element: <Order />, perm: 'orders.view' },
   { path: '/orders/:id', element: <AdminOrderDetail />, perm: 'orders.view' },
   { path: '/coupons', element: <Coupons />, perm: 'coupons.view' },
+  { path: '/banners', element: <Banners />, perm: 'content.view' },
   { path: '/settings', element: <Settings />, perm: 'dashboard.view' },
   { path: '/emails', element: <Emails />, perm: 'notifications.view' },
   { path: '/emails/log', element: <Emails tab="log" />, perm: 'notifications.view' },

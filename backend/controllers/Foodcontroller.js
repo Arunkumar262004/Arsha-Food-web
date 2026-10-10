@@ -25,6 +25,20 @@ const addfood = async (req, res) => {
             if (i === 0) primaryStored = stored;
         }
 
+        const parseArr = (val) => {
+            if (!val) return [];
+            try {
+                const parsed = typeof val === "string" ? JSON.parse(val) : val;
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                return typeof val === "string" ? val.split(",").map(s => s.trim()).filter(Boolean) : [];
+            }
+        };
+
+        const upsells = parseArr(req.body.upsells);
+        const crossSells = parseArr(req.body.crossSells);
+        const relatedProducts = parseArr(req.body.relatedProducts);
+
         const food = new FoodModel({
             name,
             description,
@@ -34,6 +48,9 @@ const addfood = async (req, res) => {
             images: imageUrls,
             imageProvider: primaryStored?.provider || "local",
             imageKey: primaryStored?.key,
+            upsells,
+            crossSells,
+            relatedProducts,
         });
 
         await food.save();
@@ -76,7 +93,10 @@ const remove_food = async (req, res) => {
 
 const fetch_view_food = async (req, res) => {
     try {
-        const fetch_Id = await FoodModel.findById(req.params.id);
+        const fetch_Id = await FoodModel.findById(req.params.id)
+            .populate('upsells', 'name price image category description')
+            .populate('crossSells', 'name price image category description')
+            .populate('relatedProducts', 'name price image category description');
         res.json({ success: true, dataid: fetch_Id });
     } catch (error) {
         console.log(error);
@@ -100,6 +120,20 @@ const update_food = async (req, res) => {
         if (description) food.description = description;
         if (category) food.category = category;
         if (Number.isFinite(price) && price >= 0) food.price = price;
+
+        const parseArr = (val) => {
+            if (!val) return null;
+            try {
+                const parsed = typeof val === "string" ? JSON.parse(val) : val;
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                return typeof val === "string" ? val.split(",").map(s => s.trim()).filter(Boolean) : [];
+            }
+        };
+
+        if (req.body.upsells !== undefined) food.upsells = parseArr(req.body.upsells);
+        if (req.body.crossSells !== undefined) food.crossSells = parseArr(req.body.crossSells);
+        if (req.body.relatedProducts !== undefined) food.relatedProducts = parseArr(req.body.relatedProducts);
 
         let currentImages = food.images && food.images.length ? [...food.images] : [food.image];
         if (req.body.existingImages !== undefined) {

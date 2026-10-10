@@ -1,0 +1,23 @@
+.rail { position: relative; }
+.rail-track {
+  display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 3 * 24px) / 4); gap: 24px;
+  overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 10px 2px 28px;
+}
+.rail-track::-webkit-scrollbar { display: none; }
+.rail-item { scroll-snap-align: start; min-width: 0; }
+.rail-btn {
+  position: absolute; top: 38%; z-index: 3; width: 46px; height: 46px; border-radius: 4px; border: 0;
+  background: var(--brand); color: #fff; display: grid; place-items: center; cursor: pointer;
+  box-shadow: var(--shadow); transition: opacity .2s, background .2s, transform .2s;
+}
+.rail-btn:hover:not(:disabled) { background: var(--brand-dark); }
+.rail-btn:disabled { opacity: 0; pointer-events: none; }
+.rail-btn.prev { left: -22px; }
+.rail-btn.next { right: -22px; }
+
+@media (max-width: 1100px) { .rail-track { grid-auto-columns: calc((100% - 2 * 24px) / 3); } }
+@media (max-width: 760px) {
+  .rail-track { grid-auto-columns: 46%; gap: 14px; }
+  .rail-btn { display: none; }
+}
+@media (max-width: 480px) { .rail-track { grid-auto-columns: 72%; } }
