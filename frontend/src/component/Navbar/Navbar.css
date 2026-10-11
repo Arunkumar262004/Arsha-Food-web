@@ -119,3 +119,9 @@
   .nav-search-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 420px) { .nav-inner { gap: 10px; } .nav-icon { width: 40px; } }
+
+/* Cart bounce when an item lands */
+.nav-cart.is-bump { animation: cart-bump .6s cubic-bezier(.3, 1.6, .5, 1); }
+.nav-cart.is-bump .nav-count { animation: count-pop .6s ease; }
+@keyframes cart-bump { 0% { transform: scale(1); } 30% { transform: scale(1.28) rotate(-8deg); } 60% { transform: scale(.94) rotate(4deg); } 100% { transform: scale(1); } }
+@keyframes count-pop { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.5); background: var(--red); color: #fff; } }

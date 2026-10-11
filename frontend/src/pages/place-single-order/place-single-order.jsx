@@ -2,9 +2,9 @@ import React, { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { StoreContext } from '../../context/Storecontext';
-import { payWithRazorpay } from '../../utils/razorpay';
+import { payWithRazorpay, preloadRazorpay } from '../../utils/razorpay';
 import { CartControl, VegMark } from '../../component/Fooditem/Fooditem';
-import { AddressForm, CheckoutSteps, CouponBox, PriceSummary, useAddress, useTotals } from '../../component/Checkout/Checkout';
+import { AddressForm, CheckoutSteps, CouponBox, PaymentOverlay, PriceSummary, useAddress, useTotals } from '../../component/Checkout/Checkout';
 import Icon from '../../component/Icon';
 import '../Placeorder/Placeorder.css';
 import { dishPath } from '../../config/store';
@@ -17,6 +17,8 @@ const Place_single_order = () => {
 
   const [food, setFood] = useState(null);
   const [paying, setPaying] = useState(false);
+  const [opening, setOpening] = useState(false); // our hand-off screen, until Razorpay's window is up
+  useEffect(() => { preloadRazorpay(); }, []);
   const [error, setError] = useState('');
   const { data, onChange, prefilled } = useAddress();
 
@@ -35,12 +37,12 @@ const Place_single_order = () => {
   const placeOrder = async (event) => {
     event.preventDefault();
     if (!token) { setShowLogin(true); return; }
-    setPaying(true); setError('');
+    setPaying(true); setOpening(true); setError('');
     try {
       const response = await axios.post(`${url}/api/placesingle/get_single_order`,
         { address: data, itemId: food._id, quantity, couponCode: coupon?.code }, { headers: { token } });
       if (!response.data.success) { setError(response.data.message || 'Could not place your order.'); return; }
-      const result = await payWithRazorpay({ url, token, checkout: response.data });
+      const result = await payWithRazorpay({ url, token, checkout: response.data, onOpen: () => setOpening(false) });
       if (result === 'paid') {
         setCoupon(null);
         navigate('/myorders');
@@ -49,6 +51,7 @@ const Place_single_order = () => {
       setError(err.response?.data?.message || err.message || 'Could not place your order.');
     } finally {
       setPaying(false);
+      setOpening(false);
     }
   };
 
@@ -65,9 +68,6 @@ const Place_single_order = () => {
       <form onSubmit={placeOrder} className="co-layout">
         <div className="co-main">
           <AddressForm data={data} onChange={onChange} prefilled={prefilled} />
-        </div>
-
-        <aside className="co-side">
           <div className="co-card">
             <div className="po-items-head">
               <h2 className="co-bill-title">Your order</h2>
@@ -87,6 +87,16 @@ const Place_single_order = () => {
             )}
           </div>
 
+          <div className="co-card po-eta">
+            <span className="co-icon"><Icon name="clock" size={20} /></span>
+            <div>
+              <strong>Delivery in 25–35 minutes</strong>
+              <span>Your food is cooked after you pay, then packed in sealed containers.</span>
+            </div>
+          </div>
+        </div>
+
+        <aside className="co-side">
           {food && <CouponBox items={[{ id: food._id, quantity }]} subtotal={totals.subtotal} />}
 
           <PriceSummary totals={totals} itemCount={quantity}>
@@ -97,6 +107,7 @@ const Place_single_order = () => {
           </PriceSummary>
         </aside>
       </form>
+      <PaymentOverlay show={opening} amount={totals.total} />
     </div>
   );
 };

@@ -14,6 +14,7 @@ const Navbar = () => {
   const [profileOpen, setProfileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [bump, setBump] = useState(false)
   const profileRef = useRef(null)
   const searchRef = useRef(null)
   const inputRef = useRef(null)
@@ -26,6 +27,14 @@ const Navbar = () => {
   useEffect(() => { setMenuOpen(false); setProfileOpen(false); setSearchOpen(false) }, [location.pathname, location.hash])
   useEffect(() => { setQ(params.get('q') || '') }, [params])
   useEffect(() => { if (searchOpen) inputRef.current?.focus() }, [searchOpen])
+
+  // "Fly to cart" lands here (utils/flyToCart.js)
+  useEffect(() => {
+    let t
+    const onBump = () => { setBump(false); requestAnimationFrame(() => setBump(true)); clearTimeout(t); t = setTimeout(() => setBump(false), 700) }
+    window.addEventListener('cart:bump', onBump)
+    return () => { window.removeEventListener('cart:bump', onBump); clearTimeout(t) }
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -119,7 +128,7 @@ const Navbar = () => {
             )}
           </div>
 
-          <Link to="/cart" className="nav-icon" aria-label={`Cart, ${cartCount} items`}>
+          <Link to="/cart" className={`nav-icon nav-cart ${bump ? 'is-bump' : ''}`} data-cart-target aria-label={`Cart, ${cartCount} items`}>
             <Icon name="bag" size={22} />
             {cartCount > 0 && <span className="nav-count">{cartCount > 99 ? '99+' : cartCount}</span>}
           </Link>

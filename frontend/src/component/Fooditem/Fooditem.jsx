@@ -4,6 +4,7 @@ import { StoreContext } from '../../context/Storecontext';
 import { catLabel } from '../Explorermenu/categories';
 import Icon from '../Icon';
 import { Reveal } from '../Motion';
+import { flyToCart } from '../../utils/flyToCart';
 import './Fooditem.css';
 import { dishPath } from '../../config/store';
 
@@ -15,7 +16,8 @@ export const VegMark = ({ isVeg = true, size = 16 }) => (
 
 // ADD button turns into a quantity stepper once the item is in the cart — one control, never two.
 export const CartControl = ({ id, name, large }) => {
-  const { cartItems, addToCart, removeItemFromCart, food_list } = useContext(StoreContext);
+  const { cartItems, addToCart: add, removeItemFromCart, food_list, token } = useContext(StoreContext);
+  const addToCart = (itemId, e) => { if (token && e) flyToCart(e.currentTarget); return add(itemId); };
   const qty = cartItems[id] || 0;
   const soldOut = food_list.find((f) => f._id === id)?.isAvailable === false;
   if (soldOut && !qty) {
@@ -23,9 +25,9 @@ export const CartControl = ({ id, name, large }) => {
   }
   if (!qty) {
     return large ? (
-      <button className="btn btn-primary" onClick={() => addToCart(id)}><Icon name="plus" size={18} />Add to cart</button>
+      <button className="btn btn-primary" onClick={(e) => addToCart(id, e)}><Icon name="plus" size={18} />Add to cart</button>
     ) : (
-      <button className="add-btn" onClick={() => addToCart(id)} aria-label={`Add ${name} to cart`}>
+      <button className="add-btn" onClick={(e) => addToCart(id, e)} aria-label={`Add ${name} to cart`}>
         ADD<Icon name="plus" size={14} stroke={3} />
       </button>
     );
@@ -34,7 +36,7 @@ export const CartControl = ({ id, name, large }) => {
     <div className={`stepper ${large ? 'stepper-lg' : ''}`} role="group" aria-label={`${name} quantity`}>
       <button onClick={() => removeItemFromCart(id)} aria-label={`Remove one ${name}`}><Icon name="minus" size={16} stroke={2.6} /></button>
       <span aria-live="polite">{qty}</span>
-      <button onClick={() => addToCart(id)} disabled={soldOut} aria-label={`Add one more ${name}`}><Icon name="plus" size={16} stroke={2.6} /></button>
+      <button onClick={(e) => addToCart(id, e)} disabled={soldOut} aria-label={`Add one more ${name}`}><Icon name="plus" size={16} stroke={2.6} /></button>
     </div>
   );
 };

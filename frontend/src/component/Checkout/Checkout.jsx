@@ -208,3 +208,19 @@ export const EmptyCart = () => (
     <Link to="/#menu" className="btn btn-primary btn-lg">Browse the menu</Link>
   </div>
 );
+
+/* Shown between "Pay" and Razorpay's own window: the order is being created and the payment window loaded. */
+export const PaymentOverlay = ({ show, amount }) => {
+  const { settings } = useContext(StoreContext);
+  if (!show) return null;
+  return (
+    <div className="pay-overlay" role="status" aria-live="polite">
+      <div className="pay-card">
+        <div className="pay-ring"><span /><Icon name="lock" size={22} /></div>
+        <strong>Opening secure payment</strong>
+        <span>{settings.currencySymbol}{amount} · UPI, cards and net banking</span>
+        <small><Icon name="shield" size={14} />Protected by Razorpay — we never see your card details</small>
+      </div>
+    </div>
+  );
+};

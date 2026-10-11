@@ -5,6 +5,7 @@ import { StoreContext } from '../../context/Storecontext';
 import Fooditem, { CartControl, VegMark } from '../Fooditem/Fooditem';
 import { catLabel } from '../Explorermenu/categories';
 import { dishPath } from '../../config/store';
+import { flyToCart } from '../../utils/flyToCart';
 import { Reveal } from '../Motion';
 import Icon from '../Icon';
 import './Productview.css';
@@ -181,6 +182,7 @@ const Productview = () => {
   const addPack = async () => {
     if (!token) { setShowLogin(true); return false; }
     setAdding(true);
+    flyToCart(document.querySelector('.pv-hero img'));
     try {
       for (let i = 0; i < pack; i++) await addToCart(id);
       flash(`Added ${pack} × ${food.name} to your cart`);

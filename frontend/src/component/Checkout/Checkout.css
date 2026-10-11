@@ -106,3 +106,22 @@
   .co-fields { grid-template-columns: 1fr; }
   .co-steps li + li::before { width: 16px; }
 }
+
+/* Payment hand-off screen */
+.pay-overlay {
+  position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; padding: 20px;
+  background: rgba(29, 18, 11, .82); backdrop-filter: blur(6px); animation: pay-fade .25s ease;
+}
+@keyframes pay-fade { from { opacity: 0; } }
+.pay-card {
+  width: min(360px, 100%); display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+  padding: 32px 28px 26px; border-radius: 26px; background: var(--surface); box-shadow: 0 30px 80px rgba(0, 0, 0, .45);
+  animation: pay-pop .4s var(--ease-out);
+}
+@keyframes pay-pop { from { opacity: 0; transform: translateY(14px) scale(.96); } }
+.pay-ring { position: relative; width: 74px; height: 74px; display: grid; place-items: center; color: var(--brand); margin-bottom: 10px; }
+.pay-ring span { position: absolute; inset: 0; border-radius: 50%; border: 4px solid var(--brand-soft); border-top-color: var(--brand); border-right-color: var(--gold); animation: spin .9s linear infinite; }
+.pay-card strong { font-family: var(--font-display); font-size: 21px; }
+.pay-card > span { color: var(--ink-2); font-size: 14.5px; }
+.pay-card small { display: flex; align-items: center; gap: 6px; margin-top: 12px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: 12.5px; }
+.pay-card small svg { color: var(--green); }
