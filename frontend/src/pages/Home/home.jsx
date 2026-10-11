@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '../../component/Header/Header'
+import FestivalSale from '../../component/FestivalSale/FestivalSale'
 import Explorer from '../../component/Explorermenu/Emplorer'
 import Fooddisplay from '../../component/fooddisplay/Fooddisplay'
 import App_download from '../../component/App_download/app_download.jsx'
@@ -21,6 +22,7 @@ const Home = () => {
       <Header />
       <TickerBand />
       <FeatureStrip />
+      <FestivalSale />
       <Explorer Category={Category} Setcategory={Setcategory} />
       <PromoBanners Setcategory={Setcategory} />
       <Fooddisplay Category={Category} Setcategory={Setcategory} query={query} onClearSearch={() => navigate('/#menu')} />

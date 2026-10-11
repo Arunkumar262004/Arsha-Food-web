@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import { errMsg } from './lib/api';
 import Icon from './components/Icon';
 import './Login.css';
+import loginBg from './assets/login-bg.webp';
 
 const Login = () => {
   const { login } = useAuth();
@@ -32,22 +33,21 @@ const Login = () => {
 
   return (
     <div className="login-root">
+      <img className="login-photo" src={loginBg} alt="" />
+      <div className="login-shade" />
       <div className="login-left">
         <div className="left-inner">
-          <div className="left-badge"><span className="pill-ring" />Admin console</div>
-          <h1 className="left-headline">Run your store<br />from <span className="accent">one dashboard.</span></h1>
-          <p className="left-desc">
-            Track sales and orders as they happen, manage your menu, and control exactly what each team member can access.
-          </p>
-          <div className="left-preview" aria-hidden="true">
-            <div className="lp-card">
-              <span>Revenue</span><strong>₹1,90,230</strong><em>▲ 12.5%</em>
-              <svg viewBox="0 0 120 36"><path d="M0 30 L15 26 L30 28 L45 18 L60 21 L75 12 L90 15 L105 6 L120 8" fill="none" stroke="#2F6BFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </div>
-            <div className="lp-card">
-              <span>Orders</span><strong>2,856</strong><em>▲ 8.7%</em>
-              <div className="lp-bars">{[40, 65, 50, 80, 60, 95, 70].map((h, i) => <i key={i} style={{ height: `${h}%` }} />)}</div>
-            </div>
+          <div className="left-brand"><span><img src="/logo.png" alt="" /></span>Inofex Restaurant</div>
+          <div className="left-copy">
+            <div className="left-badge"><span className="dot" />Admin console</div>
+            <h1 className="left-headline">Your kitchen,<br />your menu, <em>one place.</em></h1>
+            <p className="left-desc">Take orders, update the menu, run offers and see how the day is going — from any device.</p>
+            <ul className="left-points">
+              <li><Icon name="bag" size={18} />Live orders and payments</li>
+              <li><Icon name="box" size={18} />Menu, categories and stock</li>
+              <li><Icon name="tag" size={18} />Coupons, banners and newsletters</li>
+              <li><Icon name="chart" size={18} />Reports you can export</li>
+            </ul>
           </div>
         </div>
       </div>
@@ -55,6 +55,7 @@ const Login = () => {
       <div className="login-right">
         <div className="login-card">
           <img src="/logo.png" alt="Inofex Restaurant" className="login-logo" />
+          <span className="login-kicker">Staff sign-in</span>
           <h2 className="card-title-lg">Welcome back</h2>
           <p className="card-sub-lg">Sign in to manage your store</p>
 

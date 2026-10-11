@@ -19,10 +19,24 @@ import Emails from './pages/Emails/Emails';
 import Settings from './pages/Settings/Settings';
 import Reviews from './pages/Reviews/Reviews';
 import Banners from './pages/Banners/Banners';
+import Customers from './pages/Customers/Customers';
+import Categories from './pages/Categories/Categories';
+import Inventory from './pages/Inventory/Inventory';
+import Payments from './pages/Payments/Payments';
+import Reports from './pages/Reports/Reports';
+import Subscribers from './pages/Subscribers/Subscribers';
+import Sales from './pages/Sales/Sales';
 import { Empty } from './components/ui';
 
 const ROUTES = [
   { path: '/dashboard', element: <Dashboard />, perm: 'dashboard.view' },
+  { path: '/reports', element: <Reports />, perm: 'reports.view' },
+  { path: '/payments', element: <Payments />, perm: 'payments.view' },
+  { path: '/customers', element: <Customers />, perm: 'customers.view' },
+  { path: '/categories', element: <Categories />, perm: 'products.view' },
+  { path: '/inventory', element: <Inventory />, perm: 'products.view' },
+  { path: '/subscribers', element: <Subscribers />, perm: 'customers.view' },
+  { path: '/sales', element: <Sales />, perm: 'coupons.view' },
   { path: '/products', element: <List />, perm: 'products.view' },
   { path: '/products/new', element: <Add />, perm: 'products.create' },
   { path: '/reviews', element: <Reviews />, perm: 'products.view' },

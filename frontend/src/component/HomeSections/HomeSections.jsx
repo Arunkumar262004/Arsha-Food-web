@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { StoreContext } from '../../context/Storecontext';
-import { whatsappLink } from '../../config/store';
+import { dishPath, whatsappLink } from '../../config/store';
 import { Link } from 'react-router-dom';
 import { CartControl, VegMark } from '../Fooditem/Fooditem';
 import { catLabel, useCategories, withFallback } from '../Explorermenu/categories';
@@ -158,7 +158,7 @@ export const DealOfDay = () => {
         ) : (
           <div className="specials-grid">
             <Reveal className="sp-feature">
-              <Link to={`/viewproduct/${featured._id}`} className="sp-feature-img" aria-hidden="true" tabIndex={-1}>
+              <Link to={dishPath(featured)} className="sp-feature-img" aria-hidden="true" tabIndex={-1}>
                 <img src={imageSrc(featured.image, 1000)} alt="" loading="lazy" />
                 <span className="sp-badge">#1 Today</span>
               </Link>
@@ -168,7 +168,7 @@ export const DealOfDay = () => {
                   <span>{catLabel(featured.category)}</span>
                   {featured.tag && <span className="sp-tag">{featured.tag}</span>}
                 </div>
-                <Link to={`/viewproduct/${featured._id}`} className="sp-feature-name">{featured.name}</Link>
+                <Link to={dishPath(featured)} className="sp-feature-name">{featured.name}</Link>
                 <p>{featured.description}</p>
                 <div className="sp-feature-foot">
                   <span className="sp-price">{cur}{featured.price}</span>
@@ -181,10 +181,10 @@ export const DealOfDay = () => {
               {rest.map((f, i) => (
                 <Reveal as="li" key={f._id} className="sp-row" delay={0.08 * (i + 1)}>
                   <span className="sp-rank">{String(i + 2).padStart(2, '0')}</span>
-                  <Link to={`/viewproduct/${f._id}`} className="sp-thumb" tabIndex={-1} aria-hidden="true"><img src={imageSrc(f.image, 220)} alt="" loading="lazy" /></Link>
+                  <Link to={dishPath(f)} className="sp-thumb" tabIndex={-1} aria-hidden="true"><img src={imageSrc(f.image, 220)} alt="" loading="lazy" /></Link>
                   <div className="sp-row-text">
                     <span className="sp-row-meta"><VegMark isVeg={f.isVeg !== false} size={13} />{catLabel(f.category)}</span>
-                    <Link to={`/viewproduct/${f._id}`} className="sp-row-name">{f.name}</Link>
+                    <Link to={dishPath(f)} className="sp-row-name">{f.name}</Link>
                     <span className="sp-row-price">{cur}{f.price}</span>
                   </div>
                   <CartControl id={f._id} name={f.name} />

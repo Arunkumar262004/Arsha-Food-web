@@ -169,3 +169,13 @@
   .pv-review-form { padding: 20px; }
   .pv-cta-row { flex-direction: column; }
 }
+
+.pv-stock.out { color: var(--red); }
+.pv-stock.out .dot { background: var(--red); animation: none; }
+.pv-soldout { margin-top: 24px; display: flex; flex-direction: column; gap: 4px; padding: 16px 18px; border-radius: 16px; background: var(--red-soft); color: #8a2a22; }
+.pv-soldout span { font-size: 14px; color: var(--ink-2); }
+
+.pv-mrp { color: var(--ink-3); font-size: 18px; font-weight: 600; }
+.pv-save { background: var(--green-soft); color: var(--green); font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 999px; }
+.pv-salebar { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 8px 14px; border-radius: 12px; background: var(--red-soft); color: #8a2a22; font-size: 13.5px; }
+.pv-salebar svg { color: var(--red); }

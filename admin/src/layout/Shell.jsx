@@ -7,11 +7,17 @@ import ChangePassword from "./ChangePassword";
 import { NAV } from "./nav";
 import "./Shell.css";
 
+const STORE_URL = import.meta.env.VITE_STORE_URL;
 
 const initials = (name = "") => name.split(/\s+/).map((p) => p[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "A";
 
 const readCollapsed = () => {
   try { return localStorage.getItem("sidebarCollapsed") === "1"; } catch { return false; }
+};
+
+const greeting = () => {
+  const h = new Date().getHours();
+  return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
 };
 
 const Shell = ({ children }) => {
@@ -55,10 +61,10 @@ const Shell = ({ children }) => {
     <div className={`shell ${collapsed ? "is-collapsed" : ""} ${mobileOpen ? "is-mobile-open" : ""}`}>
       <aside className="sb" aria-label="Main navigation">
         <div className="sb-brand">
-          <img src="/logo.png" alt="" className="sb-logo" />
+          <span className="sb-logo"><img src="/logo.png" alt="" /></span>
           <div className="sb-brand-text">
             <strong>Inofex Restaurant</strong>
-            <span>Admin Console</span>
+            <span>Admin console</span>
           </div>
         </div>
 
@@ -67,8 +73,8 @@ const Shell = ({ children }) => {
             <div className="sb-section" key={s.section || "main"}>
               {s.section && <div className="sb-label">{s.section}</div>}
               {s.items.map((i) => (
-                <NavLink key={i.to} to={i.to} end={i.end} className="sb-link" title={i.label}>
-                  <Icon name={i.icon} size={20} />
+                <NavLink key={i.to} to={i.to} end={i.end} className="sb-link" title={collapsed ? i.label : undefined}>
+                  <Icon name={i.icon} size={19} />
                   <span>{i.label}</span>
                 </NavLink>
               ))}
@@ -77,12 +83,9 @@ const Shell = ({ children }) => {
         </nav>
 
         <div className="sb-foot">
-          <div className="sb-user">
-            <div className="avatar">{initials(admin?.name)}</div>
-            <div className="sb-user-text">
-              <strong>{admin?.name}</strong>
-              <span>{admin?.role?.name}</span>
-            </div>
+          <div className={`sb-status ${online ? "ok" : "bad"}`} title={`Database ${status?.database || "unknown"}`}>
+            <span className="sb-status-dot" />
+            <span className="sb-status-text">{online ? "All systems running" : status ? "Database offline" : "Checking…"}</span>
           </div>
         </div>
       </aside>
@@ -90,33 +93,37 @@ const Shell = ({ children }) => {
 
       <div className="main">
         <header className="hd">
-          <button className="btn btn-ghost btn-icon" onClick={toggleSidebar} aria-label="Toggle navigation">
+          <button className="hd-burger" onClick={toggleSidebar} aria-label="Toggle navigation">
             <Icon name="menu" size={20} />
           </button>
 
-          <div className="hd-pills">
-            <span className={`pill ${online ? "pill-ok" : "pill-bad"}`} title={`Database ${status?.database || "unknown"}`}>
-              <span className="pill-ring" />{online ? "Store online" : "Store offline"}
-            </span>
-            {status && (
-              <span className={`pill hide-sm ${status.razorpay.configured ? "" : "pill-bad"}`} title="Payment gateway">
-                Razorpay · {status.razorpay.configured ? (status.razorpay.mode === "live" ? "Live" : "Test mode") : "Not configured"}
-              </span>
-            )}
-            {status && (
-              <span className="pill hide-sm" title="Where product images are stored">
-                Images · {status.storage.provider === "supabase" ? "Supabase" : "Local disk"}
-              </span>
-            )}
+          <div className="hd-hello hide-sm">
+            <strong>{greeting()}, {admin?.name?.split(" ")[0] || "there"}</strong>
+            <span>{new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}</span>
           </div>
 
           <div className="hd-right" ref={menuRef}>
-            <span className="hd-date hide-sm">
-              {new Date().toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
-            </span>
+            {status && (
+              <div className="hd-chips hide-md">
+                <span className={`chip-status ${status.razorpay.configured ? (status.razorpay.mode === "live" ? "ok" : "warn") : "bad"}`} title="Payment gateway">
+                  <Icon name="rupee" size={14} />Razorpay · {status.razorpay.configured ? (status.razorpay.mode === "live" ? "Live" : "Test") : "Not set up"}
+                </span>
+                <span className="chip-status" title="Where product images are stored">
+                  <Icon name="image" size={14} />{status.storage.provider === "supabase" ? "Supabase" : "Local disk"}
+                </span>
+              </div>
+            )}
+            {STORE_URL && (
+              <a href={STORE_URL} target="_blank" rel="noreferrer" className="btn btn-ghost hd-store">
+                <Icon name="eye" size={16} /><span className="hide-sm">View store</span>
+              </a>
+            )}
             <button className="hd-profile" onClick={() => setMenuOpen((o) => !o)} aria-haspopup="menu" aria-expanded={menuOpen}>
               <div className="avatar avatar-sm">{initials(admin?.name)}</div>
-              <span className="hide-sm">{admin?.name}</span>
+              <span className="hd-profile-text hide-sm">
+                <strong>{admin?.name}</strong>
+                <small>{admin?.role?.name}</small>
+              </span>
               <Icon name="chevronDown" size={16} />
             </button>
             {menuOpen && (

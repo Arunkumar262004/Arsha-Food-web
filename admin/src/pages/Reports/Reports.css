@@ -1,0 +1,46 @@
+/* Shared by Reports and Payments */
+.kpis.is-loading { opacity: .55; transition: opacity .2s; }
+.kpi-btn { text-align: left; font: inherit; color: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.kpi-btn:hover { border-color: var(--border-strong); }
+.kpi-btn.on { border-color: var(--primary); box-shadow: var(--ring); }
+.rp-methods { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; padding: 14px 20px; }
+.rp-method { display: flex; align-items: center; gap: 8px; color: var(--ink-2); }
+.rp-ref { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--ink-3); }
+
+.rp-custom { display: flex; gap: 16px; flex-wrap: wrap; padding: 16px 20px; }
+.rp-custom .field { width: 200px; }
+.rp-section { padding: 20px 22px; min-width: 0; }
+.rp-section .card-head { margin-bottom: 14px; }
+.rp-chart { min-height: 290px; }
+.rp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.rp-flush { margin: 0 -22px -20px; width: auto; }
+
+.chart-tip { background: var(--espresso); color: #fff; padding: 8px 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 2px; box-shadow: var(--shadow-lg); font-size: 12.5px; }
+.chart-tip span { color: rgba(255, 255, 255, .65); }
+
+.rp-bars { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.rp-bar-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.rp-bar-top span { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+.rp-bar-top i { width: 10px; height: 10px; border-radius: 3px; }
+.rp-bar { height: 8px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.rp-bar span { display: block; height: 100%; border-radius: inherit; background: var(--primary); transition: width .5s ease; }
+.rp-bar.sm { height: 6px; }
+.rp-bars small { display: block; margin-top: 4px; font-size: 12px; }
+
+.rp-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 14px; }
+.rp-week > div { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; border-radius: 10px; background: var(--surface-2); position: relative; overflow: hidden; }
+.rp-week > div > span { position: absolute; inset: 0; background: var(--gold); }
+.rp-week small, .rp-week strong { position: relative; }
+.rp-week small { font-size: 11.5px; font-weight: 600; color: var(--ink-2); }
+
+.rp-rank { list-style: none; display: flex; flex-direction: column; }
+.rp-rank li { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.rp-rank li:last-child { border-bottom: 0; }
+.rp-rank li > div { display: flex; flex-direction: column; min-width: 0; }
+.rp-rank small { color: var(--ink-3); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rp-rank-n { width: 28px; height: 28px; border-radius: 50%; background: var(--primary-soft); color: var(--primary); display: grid; place-items: center; font-weight: 700; font-size: 12.5px; }
+.rp-rank li:first-child .rp-rank-n { background: var(--gold); color: var(--espresso); }
+.rp-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; font-size: 12.5px; letter-spacing: .05em; padding: 4px 8px; border-radius: 6px; border: 1.5px dashed var(--primary); color: var(--primary); background: var(--primary-soft); }
+.rp-neg { color: var(--down); }
+
+@media (max-width: 1100px) { .rp-grid { grid-template-columns: 1fr; } }

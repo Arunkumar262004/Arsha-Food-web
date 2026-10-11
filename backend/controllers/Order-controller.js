@@ -1,3 +1,4 @@
+import { liveSalePrices } from "../services/sales.js";
 import mongoose from "mongoose";
 import OrderModel, { ORDER_STATUSES, nextOrderNumber } from "../models/Order-model.js";
 import userModel from "../models/User-model.js";
@@ -34,11 +35,21 @@ export const priceLines = async (lines) => {
 
     const foods = await FoodModel.find({ _id: { $in: [...qtyById.keys()] } }).lean();
     if (foods.length !== qtyById.size) throw Object.assign(new Error("Some items are no longer available"), { status: 400 });
+    const soldOut = foods.filter((f) => f.isAvailable === false);
+    if (soldOut.length) {
+        throw Object.assign(new Error(`${soldOut.map((f) => f.name).join(", ")} ${soldOut.length > 1 ? "are" : "is"} sold out right now. Please remove ${soldOut.length > 1 ? "them" : "it"} from your cart.`), { status: 400 });
+    }
 
-    const items = foods.map(f => ({
-        _id: f._id, name: f.name, price: f.price, quantity: qtyById.get(String(f._id)),
-        image: f.image, category: f.category,
-    }));
+    const salePrices = await liveSalePrices();
+    const items = foods.map(f => {
+        const sale = salePrices.get(String(f._id));
+        const onSale = sale && sale.price < f.price;
+        return {
+            _id: f._id, name: f.name, price: onSale ? sale.price : f.price, quantity: qtyById.get(String(f._id)),
+            image: f.image, category: f.category,
+            ...(onSale ? { mrp: f.price, saleName: sale.saleName } : {}),
+        };
+    });
     const settings = await getSettings(["deliveryFee", "freeDeliveryThreshold", "currency"]);
     const subtotal = Math.round(items.reduce((s, i) => s + i.price * i.quantity, 0) * 100) / 100;
     let deliveryFee = Number(settings.deliveryFee) || 0;

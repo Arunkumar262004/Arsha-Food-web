@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { StoreContext } from '../../context/Storecontext'
 import { assets } from '../../assets/assets'
-import { whatsappLink } from '../../config/store'
+import { dishPath, whatsappLink } from '../../config/store'
 import Icon from '../Icon'
 import './Navbar.css'
 
@@ -105,7 +105,7 @@ const Navbar = () => {
                 ) : (
                   <div className="nav-search-grid">
                     {suggestions.map((f) => (
-                      <button key={f._id} className="nav-search-item" onClick={() => { setSearchOpen(false); navigate(`/viewproduct/${f._id}`) }}>
+                      <button key={f._id} className="nav-search-item" onClick={() => { setSearchOpen(false); navigate(dishPath(f)) }}>
                         <img src={imageSrc(f.image, 120)} alt="" />
                         <span>
                           <strong>{f.name}</strong>

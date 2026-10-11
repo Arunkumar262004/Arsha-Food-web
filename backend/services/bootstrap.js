@@ -7,6 +7,7 @@ import { DEFAULT_ROLES, ALL_PERMISSIONS } from "../config/permissions.js";
 import { DEFAULT_TEMPLATES } from "./emailTemplates.js";
 
 import FoodModel from "../models/Foodmodel.js";
+import { syncCategories } from "../controllers/Category-controller.js";
 import Coupon from "../models/Couponmodel.js";
 import ReviewModel from "../models/Reviewmodel.js";
 
@@ -72,6 +73,18 @@ export const bootstrap = async () => {
     } catch (err) {
         console.warn("Error seeding coupons:", err.message);
     }
+
+    // Give every dish a readable URL slug (dishes created before slugs existed have none).
+    try {
+        for (const food of await FoodModel.find({ $or: [{ slug: { $exists: false } }, { slug: null }, { slug: "" }] })) {
+            await food.assignSlug();
+            await food.save();
+        }
+    } catch (err) {
+        console.warn("Error assigning dish slugs:", err.message);
+    }
+
+    try { await syncCategories(); } catch (err) { console.warn("Error importing categories:", err.message); }
 
     // (Removed: padding every product's gallery to 8 images from a fixed filename list — most of those
     // files don't exist, so every dish showed broken or unrelated photos.)

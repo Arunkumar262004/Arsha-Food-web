@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import { isRazorpayConfigured, razorpayMode } from "../services/razorpay.js";
 import { activeProvider } from "../services/storage.js";
 
-const TZ = process.env.STORE_TIMEZONE || "Asia/Kolkata";
+export const TZ = process.env.STORE_TIMEZONE || "Asia/Kolkata";
 const DAY = 86400000;
 
 // Offset (minutes) of the store timezone from UTC at a given instant.
@@ -89,7 +89,7 @@ const countUsers = async (start, end) => {
 const pct = (cur, prev) => (prev ? +(((cur - prev) / prev) * 100).toFixed(1) : null);
 
 // Build gap-free buckets so charts show zero days instead of skipping them.
-const buildBuckets = (start, end, unit) => {
+export const buildBuckets = (start, end, unit) => {
     const fmt = unit === "hour" ? "%Y-%m-%d %H" : unit === "month" ? "%Y-%m" : "%Y-%m-%d";
     const keys = [];
     const step = (d) => unit === "hour" ? new Date(d.getTime() + 3600000)

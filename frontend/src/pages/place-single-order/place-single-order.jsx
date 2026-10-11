@@ -7,6 +7,7 @@ import { CartControl, VegMark } from '../../component/Fooditem/Fooditem';
 import { AddressForm, CheckoutSteps, CouponBox, PriceSummary, useAddress, useTotals } from '../../component/Checkout/Checkout';
 import Icon from '../../component/Icon';
 import '../Placeorder/Placeorder.css';
+import { dishPath } from '../../config/store';
 
 const Place_single_order = () => {
   const { token, url, settings, setShowLogin, coupon, setCoupon, cartItems, imageSrc } = useContext(StoreContext);
@@ -26,7 +27,7 @@ const Place_single_order = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.title = 'Buy now — Arsha';
     if (!token) { setShowLogin(true); navigate('/'); return; }
-    axios.get(`${url}/api/food/getid/${id}`)
+    axios.get(`${url}/api/food/getid/${id}?pricing=live`)
       .then((res) => setFood(res.data.dataid))
       .catch((err) => console.error('Error fetching food:', err));
   }, [id, url, token, navigate, setShowLogin]);
@@ -70,7 +71,7 @@ const Place_single_order = () => {
           <div className="co-card">
             <div className="po-items-head">
               <h2 className="co-bill-title">Your order</h2>
-              {food && <Link to={`/viewproduct/${food._id}`} className="co-edit"><Icon name="arrowLeft" size={15} />Back to dish</Link>}
+              {food && <Link to={dishPath(food)} className="co-edit"><Icon name="arrowLeft" size={15} />Back to dish</Link>}
             </div>
             {!food ? (
               <div className="skeleton" style={{ height: 72 }} />

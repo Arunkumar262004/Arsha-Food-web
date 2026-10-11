@@ -5,11 +5,12 @@ import { api, errMsg } from "../../lib/api";
 import { PageHead } from "../../components/ui";
 import Icon from "../../components/Icon";
 import "./Add.css";
+import { LinkedDishes, MenuLabels, SeoFields, useCategoryNames } from "../../components/ProductFields";
 
-const CATS = ["Biryani", "Meals", "South Indian", "Starters", "Snacks", "Burgers & Pizza", "Rolls", "Sandwich", "Noodles", "Pasta", "Pure Veg", "Salad", "Cool Drinks", "Juices & Shakes", "Coffee & Tea", "Cake", "Deserts"];
 const TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_MB = 10;
-const EMPTY = { name: "", description: "", price: "", category: "Salad" };
+const EMPTY = { name: "", description: "", price: "", category: "" };
+const EMPTY_LABELS = { isVeg: true, tag: "", isAvailable: true };
 
 const Add = () => {
   const navigate = useNavigate();
@@ -23,6 +24,9 @@ const Add = () => {
   const [upsells, setUpsells] = useState([]);
   const [crossSells, setCrossSells] = useState([]);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [labels, setLabels] = useState(EMPTY_LABELS);
+  const [seo, setSeo] = useState({ seoTitle: "", seoDescription: "" });
+  const categories = useCategoryNames();
 
   useEffect(() => {
     document.title = "Add product · Inofex Restaurant Admin";
@@ -30,6 +34,10 @@ const Add = () => {
       if (res.data.success) setExistingFoods(res.data.data);
     }).catch((err) => console.error("Could not load products", err));
   }, []);
+
+  useEffect(() => {
+    if (categories?.length) setData((p) => (p.category ? p : { ...p, category: categories[0] }));
+  }, [categories]);
 
   const previews = useMemo(() => images.map(img => URL.createObjectURL(img)), [images]);
   useEffect(() => {
@@ -39,10 +47,6 @@ const Add = () => {
   const onChange = (e) => {
     setData((p) => ({ ...p, [e.target.name]: e.target.value }));
     setErrors((er) => ({ ...er, [e.target.name]: undefined }));
-  };
-
-  const toggleSelection = (list, setList, id) => {
-    setList((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
   };
 
   const pickFiles = (fileList) => {
@@ -78,6 +82,7 @@ const Add = () => {
     if (!images.length) e.image = "Add at least one photo of the dish.";
     if (!data.name.trim()) e.name = "Name is required.";
     if (!data.description.trim()) e.description = "Description is required.";
+    if (!data.category) e.category = "Choose a category.";
     if (data.price === "" || Number(data.price) < 0) e.price = "Enter a valid price.";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -89,7 +94,10 @@ const Add = () => {
     setUpsells([]);
     setCrossSells([]);
     setRelatedProducts([]);
+    setLabels(EMPTY_LABELS);
+    setSeo({ seoTitle: "", seoDescription: "" });
     setErrors({});
+    if (categories?.length) setData((p) => ({ ...p, category: categories[0] }));
   };
 
   const onSubmit = async (e, addAnother) => {
@@ -105,15 +113,16 @@ const Add = () => {
       fd.append("upsells", JSON.stringify(upsells));
       fd.append("crossSells", JSON.stringify(crossSells));
       fd.append("relatedProducts", JSON.stringify(relatedProducts));
+      fd.append("isVeg", labels.isVeg);
+      fd.append("isAvailable", labels.isAvailable);
+      fd.append("tag", labels.tag.trim());
+      fd.append("seoTitle", seo.seoTitle.trim());
+      fd.append("seoDescription", seo.seoDescription.trim());
 
       // Append all N uploaded images
       images.forEach((img) => {
         fd.append("images", img);
       });
-      // Primary image
-      if (images[0]) {
-        fd.append("image", images[0]);
-      }
 
       const res = await api.post("/api/food/add", fd);
       if (res.data.success) {
@@ -199,11 +208,13 @@ const Add = () => {
           <div className="field">
             <label>Category</label>
             <div className="seg" role="radiogroup" aria-label="Category" style={{ flexWrap: "wrap" }}>
-              {CATS.map((c) => (
+              {categories === null && <span className="muted" style={{ padding: "6px 10px" }}>Loading categories…</span>}
+              {(categories || []).map((c) => (
                 <button type="button" key={c} role="radio" aria-checked={data.category === c}
                   className={data.category === c ? "on" : ""} onClick={() => setData((p) => ({ ...p, category: c }))}>{c}</button>
               ))}
             </div>
+            {errors.category && <span className="field-error">{errors.category}</span>}
           </div>
           <div className="field" style={{ maxWidth: 220 }}>
             <label htmlFor="p-price">Price (₹)</label>
@@ -212,104 +223,21 @@ const Add = () => {
             {errors.price && <span className="field-error">{errors.price}</span>}
           </div>
 
-          {/* PRODUCT ASSOCIATIONS: Up-sells, Cross-sells, Related Products */}
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 16, padding: 16, display: 'flex', flexDirection: 'column', gap: 16, marginTop: 8 }}>
-            <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>
-              🔗 Product Associations & Recommendations
-            </div>
+          <div className="pf-section">
+            <h4>Menu labels</h4>
+            <MenuLabels value={labels} onChange={setLabels} />
+          </div>
 
-            {/* Cross-sells Section */}
-            <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-2)', display: 'block', marginBottom: 4 }}>
-                🍱 Cross-Sell Products ("Complete Your Meal" - Dips, Drinks, Sides)
-              </label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 120, overflowY: 'auto', padding: 4 }}>
-                {existingFoods.length === 0 ? (
-                  <span style={{ fontSize: 12, color: 'var(--ink-3)' }}>No existing products to link yet.</span>
-                ) : (
-                  existingFoods.map((f) => {
-                    const selected = crossSells.includes(f._id);
-                    return (
-                      <button
-                        key={f._id}
-                        type="button"
-                        onClick={() => toggleSelection(crossSells, setCrossSells, f._id)}
-                        style={{
-                          background: selected ? '#f26b1d' : '#fff',
-                          color: selected ? '#fff' : '#334155',
-                          border: selected ? '1px solid #f26b1d' : '1px solid #cbd5e1',
-                          borderRadius: 20, padding: '4px 10px', fontSize: 12, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s'
-                        }}
-                      >
-                        {selected ? '✓ ' : '+ '}{f.name} (₹{f.price})
-                      </button>
-                    );
-                  })
-                )}
-              </div>
-            </div>
+          <div className="pf-section">
+            <h4>Search engine listing (SEO)</h4>
+            <SeoFields value={seo} onChange={setSeo} name={data.name} description={data.description} />
+          </div>
 
-            {/* Up-sells Section */}
-            <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-2)', display: 'block', marginBottom: 4 }}>
-                ⭐ Up-Sell Products (Premium/Larger Combo Alternatives)
-              </label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 120, overflowY: 'auto', padding: 4 }}>
-                {existingFoods.length === 0 ? (
-                  <span style={{ fontSize: 12, color: 'var(--ink-3)' }}>No existing products to link yet.</span>
-                ) : (
-                  existingFoods.map((f) => {
-                    const selected = upsells.includes(f._id);
-                    return (
-                      <button
-                        key={f._id}
-                        type="button"
-                        onClick={() => toggleSelection(upsells, setUpsells, f._id)}
-                        style={{
-                          background: selected ? '#0284c7' : '#fff',
-                          color: selected ? '#fff' : '#334155',
-                          border: selected ? '1px solid #0284c7' : '1px solid #cbd5e1',
-                          borderRadius: 20, padding: '4px 10px', fontSize: 12, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s'
-                        }}
-                      >
-                        {selected ? '✓ ' : '+ '}{f.name} (₹{f.price})
-                      </button>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            {/* Related Products Section */}
-            <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-2)', display: 'block', marginBottom: 4 }}>
-                🍲 Related Products ("You Might Also Like")
-              </label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 120, overflowY: 'auto', padding: 4 }}>
-                {existingFoods.length === 0 ? (
-                  <span style={{ fontSize: 12, color: 'var(--ink-3)' }}>No existing products to link yet.</span>
-                ) : (
-                  existingFoods.map((f) => {
-                    const selected = relatedProducts.includes(f._id);
-                    return (
-                      <button
-                        key={f._id}
-                        type="button"
-                        onClick={() => toggleSelection(relatedProducts, setRelatedProducts, f._id)}
-                        style={{
-                          background: selected ? '#16a34a' : '#fff',
-                          color: selected ? '#fff' : '#334155',
-                          border: selected ? '1px solid #16a34a' : '1px solid #cbd5e1',
-                          borderRadius: 20, padding: '4px 10px', fontSize: 12, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s'
-                        }}
-                      >
-                        {selected ? '✓ ' : '+ '}{f.name} (₹{f.price})
-                      </button>
-                    );
-                  })
-                )}
-              </div>
-            </div>
+          <div className="pf-section">
+            <h4>Linked dishes</h4>
+            <LinkedDishes foods={existingFoods}
+              value={{ crossSells, upsells, relatedProducts }}
+              onChange={(v) => { setCrossSells(v.crossSells); setUpsells(v.upsells); setRelatedProducts(v.relatedProducts); }} />
           </div>
 
           <div className="add-actions">

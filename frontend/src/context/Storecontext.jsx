@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import { API_CONFIG } from "../config/api.config";
+import { setCategoryOrder } from "../config/menuOrder";
 
 export const StoreContext = createContext(null);
 
@@ -11,13 +12,22 @@ const StoreContextProvider = (props) => {
   // Read synchronously so guarded pages (checkout) don't treat a signed-in user as logged out on first render.
   const [token, setToken] = useState(() => { try { return localStorage.getItem("token") || ""; } catch { return ""; } });
   const [user, setUser] = useState(null);
-  const [food_list, setFood_list] = useState([]);
+  const [allFoods, setFood_list] = useState([]);
+  // Categories managed in admin → Categories (null until loaded, or if the backend doesn't have them yet).
+  const [categories, setCategories] = useState(null);
   const [foodLoading, setFoodLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   // True once the saved cart has been fetched (or there is no session), so pages can tell "empty" from "not loaded yet".
   const [cartLoaded, setCartLoaded] = useState(false);
   const [coupon, setCoupon] = useState(null);
   const [publicCoupons, setPublicCoupons] = useState([]);
+
+  // Dishes in categories the admin has hidden don't appear anywhere on the storefront.
+  const food_list = React.useMemo(() => {
+    if (!categories?.length) return allFoods;
+    const visible = new Set(categories.map((c) => c.name));
+    return allFoods.filter((f) => visible.has(f.category));
+  }, [allFoods, categories]);
 
   // Optional width asks image CDNs that support it (Unsplash) for a right-sized file instead of the original.
   const imageSrc = (image, width) => {
@@ -33,6 +43,7 @@ const StoreContextProvider = (props) => {
       setShowLogin(true);
       return false;
     }
+    if (food_list.find((f) => f._id === itemId)?.isAvailable === false) return false;
     setCartItems((prev) => ({ ...prev, [itemId]: (prev[itemId] || 0) + 1 }));
     await axios.post(url + "/api/cart/add", { itemId }, { headers: { token } });
     return true;
@@ -72,14 +83,21 @@ const StoreContextProvider = (props) => {
 
   useEffect(() => { setCoupon(null) }, [cartItems]);
 
+  // pricing=live → dishes in a running festival sale come back with the sale price (and the regular price as `mrp`).
   const fetch_foodlist = async () => {
     try {
-      const response = await axios.get(url + "/api/food/list");
+      const response = await axios.get(url + "/api/food/list?pricing=live");
       setFood_list(response.data.data || []);
     } finally {
       setFoodLoading(false);
     }
   };
+
+  // Live and upcoming festival sales (admin → Festival Sales).
+  const [sales, setSales] = useState([]);
+  const fetch_sales = () => axios.get(url + "/api/sales").then((r) => r.data.success && setSales(r.data.data)).catch(() => {});
+  // Prices change when a sale starts or ends: refresh menu and sales together.
+  const refreshPricing = () => { fetch_foodlist(); fetch_sales(); };
 
   const fetch_coupons = async () => {
     try {
@@ -121,6 +139,10 @@ const StoreContextProvider = (props) => {
   useEffect(() => {
     async function load_data() {
       fetch_foodlist();
+      fetch_sales();
+      axios.get(url + "/api/categories")
+        .then((r) => { if (r.data.success) { setCategoryOrder(r.data.data.map((c) => c.name)); setCategories(r.data.data); } })
+        .catch(() => {});
       fetch_coupons();
       axios.get(url + "/api/settings/public")
         .then(r => r.data.success && setSettings(s => ({ ...s, ...r.data.data })))
@@ -145,8 +167,20 @@ const StoreContextProvider = (props) => {
     }
   }, [token]);
 
+  // Keep prices current for long-open tabs (a sale may start or end while browsing).
+  useEffect(() => {
+    const id = setInterval(refreshPricing, 5 * 60 * 1000);
+    const onVisible = () => document.visibilityState === "visible" && refreshPricing();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVisible); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const contextValue = {
+    sales,
+    refreshPricing,
     food_list,
+    categories,
     foodLoading,
     cartItems,
     setCartItems,

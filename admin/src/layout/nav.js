@@ -1,33 +1,41 @@
-// Sidebar structure — add modules here as later phases land. Items are hidden without permission.
+// Sidebar structure. Items are hidden when the admin lacks the permission.
 export const NAV = [
-  { section: null, items: [{ to: "/dashboard", label: "Dashboard", icon: "dashboard", perm: "dashboard.view" }] },
+  {
+    section: null, items: [
+      { to: "/dashboard", label: "Dashboard", icon: "dashboard", perm: "dashboard.view" },
+      { to: "/reports", label: "Reports", icon: "chart", perm: "reports.view" },
+    ],
+  },
+  {
+    section: "Sales", items: [
+      { to: "/orders", label: "Orders", icon: "bag", perm: "orders.view" },
+      { to: "/payments", label: "Payments", icon: "card", perm: "payments.view" },
+      { to: "/customers", label: "Customers", icon: "users", perm: "customers.view" },
+    ],
+  },
   {
     section: "Catalog", items: [
-      { to: "/products", label: "Products", icon: "box", perm: "products.view", end: true },
-      { to: "/products/new", label: "Add Product", icon: "plus", perm: "products.create" },
-      { to: "/reviews", label: "Customer Reviews", icon: "star", perm: "products.view" },
+      { to: "/products", label: "Products", icon: "box", perm: "products.view" },
+      { to: "/categories", label: "Categories", icon: "grid", perm: "products.view" },
+      { to: "/inventory", label: "Inventory", icon: "stock", perm: "products.view" },
+      { to: "/reviews", label: "Reviews", icon: "star", perm: "products.view" },
     ],
   },
-  { section: "Sales", items: [{ to: "/orders", label: "Orders", icon: "bag", perm: "orders.view" }] },
   {
     section: "Marketing", items: [
+      { to: "/sales", label: "Festival Sales", icon: "gift", perm: "coupons.view" },
       { to: "/coupons", label: "Coupons", icon: "tag", perm: "coupons.view" },
       { to: "/banners", label: "Home Banners", icon: "image", perm: "content.view" },
-    ],
-  },
-  {
-    section: "Notifications", items: [
-      { to: "/emails", label: "Email Templates", icon: "template", perm: "notifications.view", end: true },
-      { to: "/emails/log", label: "Email Log", icon: "mail", perm: "notifications.view" },
+      { to: "/subscribers", label: "Subscribers", icon: "send", perm: "customers.view" },
+      { to: "/emails", label: "Emails", icon: "mail", perm: "notifications.view" },
     ],
   },
   {
     section: "Administration", items: [
-      { to: "/settings", label: "Delivery & Settings", icon: "settings" },
+      { to: "/settings", label: "Settings", icon: "settings" },
       { to: "/admins", label: "Admin Users", icon: "users", perm: "admins.view" },
-      { to: "/roles", label: "Roles & Permissions", icon: "shield", perm: "roles.view" },
+      { to: "/roles", label: "Roles", icon: "shield", perm: "roles.view" },
       { to: "/audit-logs", label: "Audit Logs", icon: "history", perm: "audit.view" },
     ],
   },
 ];
-

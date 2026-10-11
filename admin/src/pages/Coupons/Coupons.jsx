@@ -310,10 +310,10 @@ const Coupons = () => {
         {manage && <button className="btn btn-primary" onClick={() => setEditing(null)}><Icon name="plus" size={18} />New coupon</button>}
       </PageHead>
 
-      <div className="cp-stats">
-        <div className="card cp-stat"><span>Active coupons</span><strong className="num">{number(active)}</strong></div>
-        <div className="card cp-stat"><span>Times redeemed</span><strong className="num">{number(redemptions)}</strong></div>
-        <div className="card cp-stat"><span>Discount given</span><strong className="num">{money(given)}</strong></div>
+      <div className="kpis">
+        <div className="card kpi is-green"><span><i className="kpi-i"><Icon name="tag" size={16} /></i>Active coupons</span><strong className="num">{number(active)}</strong><small>customers can use now</small></div>
+        <div className="card kpi is-gold"><span><i className="kpi-i"><Icon name="receipt" size={16} /></i>Times redeemed</span><strong className="num">{number(redemptions)}</strong><small>on paid orders</small></div>
+        <div className="card kpi"><span><i className="kpi-i"><Icon name="rupee" size={16} /></i>Discount given</span><strong className="num">{money(given)}</strong><small>across all coupons</small></div>
       </div>
 
       <div className="card">

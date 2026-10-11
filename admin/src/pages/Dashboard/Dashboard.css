@@ -107,3 +107,25 @@
   .dash-custom { flex-wrap: wrap; }
   .dash-custom .input { flex: 1; width: auto; }
 }
+
+/* Today-at-a-glance banner */
+.dash-hero {
+  position: relative; overflow: hidden; isolation: isolate; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: center;
+  padding: 28px 32px; margin-bottom: 20px; border-radius: 24px; color: #fff;
+  background: radial-gradient(120% 140% at 100% 0%, #5a3416 0%, #2a1a10 45%, var(--espresso) 100%);
+  box-shadow: 0 24px 50px -24px rgba(29, 18, 11, .7);
+}
+.dash-hero::before { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(circle at 18% 120%, rgba(210, 154, 74, .35), transparent 45%); }
+.dash-hero-art { position: absolute; z-index: -1; right: -40px; bottom: -70px; width: 300px; opacity: .22; transform: rotate(-12deg); pointer-events: none; }
+.dash-hero-kicker { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+.dash-hero h2 { font-family: var(--font-display); font-size: 32px; font-weight: 600; letter-spacing: -.02em; margin: 6px 0 6px; }
+.dash-hero p { color: rgba(255, 255, 255, .72); font-size: 15px; }
+.dash-hero-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.dash-hero-ghost { background: rgba(255, 255, 255, .08); color: #fff; border-color: rgba(255, 255, 255, .22); }
+.dash-hero-ghost:hover { background: rgba(255, 255, 255, .16); }
+.dash-hero-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dash-hero-stats div { padding: 14px 16px; border-radius: 16px; background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .1); backdrop-filter: blur(6px); display: flex; flex-direction: column; gap: 4px; }
+.dash-hero-stats span { font-size: 12.5px; color: rgba(255, 255, 255, .62); }
+.dash-hero-stats strong { font-family: var(--font-display); font-size: 26px; font-weight: 600; }
+.dash-hero-stats div:first-child strong { color: var(--gold); }
+@media (max-width: 900px) { .dash-hero { grid-template-columns: 1fr; padding: 22px; } .dash-hero h2 { font-size: 26px; } }

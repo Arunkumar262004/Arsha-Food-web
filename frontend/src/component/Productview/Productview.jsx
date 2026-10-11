@@ -4,6 +4,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { StoreContext } from '../../context/Storecontext';
 import Fooditem, { CartControl, VegMark } from '../Fooditem/Fooditem';
 import { catLabel } from '../Explorermenu/categories';
+import { dishPath } from '../../config/store';
 import { Reveal } from '../Motion';
 import Icon from '../Icon';
 import './Productview.css';
@@ -32,14 +33,34 @@ const Accordion = ({ title, children, defaultOpen = false }) => {
   );
 };
 
+// Page title and meta description for search engines and link previews (falls back to the dish's own text).
+const DEFAULT_TITLE = document.title;
+const setMeta = (name, content, attr = 'name') => {
+  let tag = document.head.querySelector(`meta[${attr}="${name}"]`);
+  if (!tag) { tag = document.createElement('meta'); tag.setAttribute(attr, name); document.head.appendChild(tag); }
+  tag.setAttribute('content', content);
+};
+const setSeo = (dish) => {
+  const title = dish.seoTitle?.trim() || `${dish.name} — Arsha`;
+  const desc = (dish.seoDescription?.trim() || dish.description || '').slice(0, 170);
+  document.title = title;
+  setMeta('description', desc);
+  setMeta('og:title', title, 'property');
+  setMeta('og:description', desc, 'property');
+  if (dish.image) setMeta('og:image', /^https?:/.test(dish.image) ? dish.image : '', 'property');
+};
+
 const Productview = () => {
   const { cartItems, addToCart, imageSrc, url, token, setShowLogin, publicCoupons, food_list, settings } = useContext(StoreContext);
-  const { id } = useParams();
+  // The URL carries the dish's readable slug (or an old id); everything else uses the loaded dish's id.
+  const { id: param } = useParams();
   const navigate = useNavigate();
   const cur = settings.currencySymbol;
 
   const [food, setFood] = useState(null);
-  const [notFound, setNotFound] = useState(false);
+  const id = food?._id;
+  const [loadError, setLoadError] = useState(null); // null | 'missing' | 'offline'
+  const [reloadKey, setReloadKey] = useState(0);
   const [activeImg, setActiveImg] = useState(0);
   const [pack, setPack] = useState(1);
   const [adding, setAdding] = useState(false);
@@ -59,20 +80,27 @@ const Productview = () => {
   const [reviewMsg, setReviewMsg] = useState('');
   const [reviewError, setReviewError] = useState('');
 
+  // Restore the site title when leaving the dish page.
+  useEffect(() => () => { document.title = DEFAULT_TITLE; }, []);
+
   useEffect(() => {
     let alive = true;
-    setFood(null); setNotFound(false); setActiveImg(0); setPack(1);
-    axios.get(`${url}/api/food/getid/${id}`)
+    setFood(null); setLoadError(null); setActiveImg(0); setPack(1);
+    axios.get(`${url}/api/food/getid/${encodeURIComponent(param)}?pricing=live`)
       .then((res) => {
         if (!alive) return;
-        if (res.data?.dataid) {
-          setFood(res.data.dataid);
-          document.title = `${res.data.dataid.name} — Arsha`;
-        } else setNotFound(true);
+        const dish = res.data?.dataid;
+        if (!dish) { setLoadError('missing'); return; }
+        setFood(dish);
+        setSeo(dish);
+        // Old /viewproduct/<id> links: swap the address bar to the readable name.
+        if (dish.slug && param !== dish.slug) navigate(dishPath(dish), { replace: true });
       })
-      .catch(() => alive && setNotFound(true));
+      // A network failure is not "dish not found" — say the server can't be reached.
+      .catch((err) => alive && setLoadError(err.response ? 'missing' : 'offline'));
     return () => { alive = false; };
-  }, [id, url]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [param, url, reloadKey]);
 
   const fetchReviews = async () => {
     try {
@@ -107,6 +135,7 @@ const Productview = () => {
 
   useEffect(() => {
     setReviews([]); setUserReview(null); setCanReview(false); setReviewMsg(''); setReviewError('');
+    if (!id) return;
     fetchReviews();
     checkPurchaseEligible();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -177,14 +206,17 @@ const Productview = () => {
     c.type === 'percentage' ? `${c.value}% off${c.maxDiscount ? ` (up to ${cur}${c.maxDiscount})` : ''}`
       : c.type === 'fixed' ? `${cur}${c.value} off` : 'Free delivery';
 
-  if (notFound) {
+  if (loadError) {
+    const offline = loadError === 'offline';
     return (
       <div className="container">
         <div className="empty-state card" style={{ marginTop: 48 }}>
-          <div className="empty-icon"><Icon name="search" size={36} /></div>
-          <h2>Dish not found</h2>
-          <p>This item may have been removed from the menu.</p>
-          <Link to="/#menu" className="btn btn-primary">Browse the menu</Link>
+          <div className="empty-icon"><Icon name={offline ? 'refresh' : 'search'} size={36} /></div>
+          <h2>{offline ? 'We couldn’t load this dish' : 'Dish not found'}</h2>
+          <p>{offline ? 'Our kitchen server isn’t responding right now. Check your connection and try again.' : 'This item may have been removed from the menu.'}</p>
+          {offline
+            ? <button className="btn btn-primary" onClick={() => setReloadKey((k) => k + 1)}>Try again</button>
+            : <Link to="/#menu" className="btn btn-primary">Browse the menu</Link>}
         </div>
       </div>
     );
@@ -239,8 +271,16 @@ const Productview = () => {
               <h1 className="pv-title">{food.name}</h1>
               <div className="pv-price">
                 <strong>{cur}{food.price}</strong>
-                <span className="muted">per portion</span>
+                {food.mrp ? (
+                  <>
+                    <s className="pv-mrp">{cur}{food.mrp}</s>
+                    <span className="pv-save">{Math.round((1 - food.price / food.mrp) * 100)}% off</span>
+                  </>
+                ) : <span className="muted">per portion</span>}
               </div>
+              {food.sale && (
+                <div className="pv-salebar"><Icon name="gift" size={16} /><strong>{food.sale.name}</strong> price · ends {new Date(food.sale.endsAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}</div>
+              )}
               <p className="pv-desc">{food.description}</p>
 
               <ul className="pv-perks">
@@ -249,9 +289,18 @@ const Productview = () => {
                 <li><Icon name="shield" size={17} />Hygienic kitchen</li>
                 <li><Icon name="gift" size={17} />Sealed, spill-safe pack</li>
               </ul>
-              <div className="pv-stock"><span className="dot" />Available now · delivered in 25–35 mins</div>
+              {food.isAvailable === false ? (
+                <div className="pv-stock out"><span className="dot" />Sold out right now — check back soon</div>
+              ) : (
+                <div className="pv-stock"><span className="dot" />Available now · delivered in 25–35 mins</div>
+              )}
 
-              {qty === 0 ? (
+              {food.isAvailable === false ? (
+                <div className="pv-soldout">
+                  <strong>This dish is sold out today.</strong>
+                  <span>Our kitchen has run out — it'll be back on the menu soon. Try one of the dishes below meanwhile.</span>
+                </div>
+              ) : qty === 0 ? (
                 <>
                   <div className="pv-divider"><span>Choose your portion</span></div>
                   <div className="pv-packs" role="radiogroup" aria-label="Portion size">
@@ -281,7 +330,7 @@ const Productview = () => {
                 </div>
               )}
               <div className="pv-cta-row">
-                <button className="btn btn-outline btn-lg" onClick={buyNow} disabled={adding}><Icon name="arrowUpRight" size={18} />Buy now</button>
+                <button className="btn btn-outline btn-lg" onClick={buyNow} disabled={adding || food.isAvailable === false}><Icon name="arrowUpRight" size={18} />Buy now</button>
                 {qty > 0 && <Link to="/cart" className="btn btn-dark btn-lg">Go to cart</Link>}
               </div>
 

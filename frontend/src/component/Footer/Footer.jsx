@@ -1,18 +1,30 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { StoreContext } from '../../context/Storecontext';
 import "./Footer.css";
 import { assets } from '../../assets/assets';
 
 const Footer = () => {
+  const { url } = useContext(StoreContext);
   const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
+  const [subscribed, setSubscribed] = useState('');
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubscribe = (e) => {
+  // Saves the address (admin → Marketing → Subscribers).
+  const handleSubscribe = async (e) => {
     e.preventDefault();
-    if (email.trim()) {
-      setSubscribed(true);
+    if (!email.trim()) return;
+    setSending(true); setError('');
+    try {
+      const res = await axios.post(`${url}/api/subscribe`, { email: email.trim(), source: 'footer' });
+      setSubscribed(res.data.message || "You're subscribed!");
       setEmail('');
-      setTimeout(() => setSubscribed(false), 4000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not subscribe right now. Please try again.');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -32,7 +44,7 @@ const Footer = () => {
           </div>
           <form className="fn-form" onSubmit={handleSubscribe}>
             {subscribed ? (
-              <div className="fn-success">✓ You're subscribed! Check your inbox for 15% off.</div>
+              <div className="fn-success" role="status">✓ {subscribed} We'll email you our next offers.</div>
             ) : (
               <>
                 <input
@@ -42,7 +54,8 @@ const Footer = () => {
                   placeholder="Enter your email address..."
                   required
                 />
-                <button type="submit">Subscribe</button>
+                <button type="submit" disabled={sending}>{sending ? 'Saving…' : 'Subscribe'}</button>
+                {error && <div className="fn-error" role="alert">{error}</div>}
               </>
             )}
           </form>

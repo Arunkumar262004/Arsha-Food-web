@@ -15,6 +15,11 @@ import { razorpayWebhook } from "./controllers/Order-controller.js";
 import { getSettings, PUBLIC_SETTING_KEYS } from "./models/Settingmodel.js";
 import { bootstrap } from "./services/bootstrap.js";
 import { listPublicBanners } from "./controllers/Banner-controller.js";
+import { listPublicCategories } from "./controllers/Category-controller.js";
+import { subscribe } from "./controllers/Subscriber-controller.js";
+import { listPublicSales, signupForSale } from "./controllers/Sale-controller.js";
+import { startSaleWatcher } from "./services/sales.js";
+import rateLimit from "express-rate-limit";
 
 // app config
 const app = express();
@@ -31,7 +36,7 @@ app.post("/api/order/razorpay/webhook", express.raw({ type: "application/json", 
 app.use(express.json({ limit: "1mb" }))
 
 // db connection
-connectdb().then(() => bootstrap()).catch(err => console.error("Bootstrap error:", err.message));
+connectdb().then(() => bootstrap()).then(() => startSaleWatcher()).catch(err => console.error("Bootstrap error:", err.message));
 
 // api enddpoints
 app.use("/api/food",foodRouter);
@@ -43,6 +48,12 @@ app.use("/api/order",orderRouter)
 app.use("/api/placesingle/",place_buy_order)
 app.use("/api/reviews", reviewRouter);
 app.get("/api/banners", listPublicBanners);
+app.get("/api/categories", listPublicCategories);
+app.get("/api/sales", listPublicSales);
+app.post("/api/sales/:id/notify", rateLimit({ windowMs: 60 * 60 * 1000, limit: 10, standardHeaders: "draft-7", legacyHeaders: false,
+    message: { success: false, message: "Too many attempts. Try again later." } }), signupForSale);
+app.post("/api/subscribe", rateLimit({ windowMs: 60 * 60 * 1000, limit: 10, standardHeaders: "draft-7", legacyHeaders: false,
+    message: { success: false, message: "Too many attempts. Try again later." } }), subscribe);
 app.get("/api/settings/public", async (req, res) => {
     res.json({ success: true, data: await getSettings(PUBLIC_SETTING_KEYS) });
 });

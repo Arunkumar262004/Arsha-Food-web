@@ -57,6 +57,7 @@ const App = () => {
           <Route path='/profile' element={<Profile />} />
           <Route path='/myorders/:id' element={<OrderDetail />} />
           <Route path='/order/:id' element={<OrderDetail />} />
+          <Route path='/dish/:id' element={<Productview />} />
           <Route path='/viewproduct/:id' element={<Productview />} />
           <Route path='/place_single_order/:id' element={<Place_single_order />} />
           <Route path='*' element={<Home />} />

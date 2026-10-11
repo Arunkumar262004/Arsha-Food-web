@@ -1,0 +1,22 @@
+.iv-group { overflow: hidden; }
+.iv-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--surface-2); flex-wrap: wrap; }
+.iv-head h3 { font-family: var(--font-display); font-size: 18px; font-weight: 600; }
+.iv-head .muted { font-size: 13px; }
+.iv-bulk { display: flex; gap: 8px; }
+.iv-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); }
+.iv-list li {
+  display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto; gap: 14px; align-items: center;
+  padding: 12px 20px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); transition: background .15s;
+}
+.iv-list li:hover { background: #fdfaf6; }
+.iv-list li.is-out .thumb { filter: grayscale(1); opacity: .5; }
+.iv-list li.is-out .iv-name strong { color: var(--ink-3); text-decoration: line-through; text-decoration-thickness: 1px; }
+.iv-name { display: flex; flex-direction: column; min-width: 0; }
+.iv-name strong { display: flex; align-items: center; gap: 8px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.iv-name small { color: var(--ink-3); font-size: 12.5px; padding-left: 22px; }
+
+@media (max-width: 560px) {
+  .iv-list { grid-template-columns: 1fr; }
+  .iv-list li { grid-template-columns: 44px minmax(0, 1fr) auto; padding: 12px 16px; }
+  .iv-list li .badge { display: none; }
+}

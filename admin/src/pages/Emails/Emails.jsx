@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { api, errMsg } from "../../lib/api";
@@ -89,7 +90,7 @@ const Editor = ({ tpl, canManage, adminEmail, onSaved }) => {
           <div className="card-title">{tpl.name}</div>
           <div className="card-sub">{tpl.description}</div>
         </div>
-        <label className={`switch ${!canManage ? "disabled" : ""}`} title={tpl.isActive ? "Customers receive this email" : "This email is not sent"}>
+        <label className={`em-switch ${!canManage ? "disabled" : ""}`} title={tpl.isActive ? "Customers receive this email" : "This email is not sent"}>
           <input type="checkbox" checked={tpl.isActive} disabled={!canManage || saving} onChange={(e) => save({ isActive: e.target.checked })} />
           <span className="switch-track"><span /></span>
           <span>{tpl.isActive ? "Enabled" : "Disabled"}</span>
@@ -212,6 +213,7 @@ const EmailLog = () => {
 };
 
 const Emails = ({ tab = "templates" }) => {
+  const navigate = useNavigate();
   const { can, admin } = useAuth();
   const canManage = can("notifications.manage");
   const [templates, setTemplates] = useState([]);
@@ -247,6 +249,11 @@ const Emails = ({ tab = "templates" }) => {
           </span>
         )}
       </PageHead>
+
+      <div className="tabs" role="tablist">
+        <button role="tab" aria-selected={tab !== "log"} className={tab !== "log" ? "on" : ""} onClick={() => navigate("/emails")}>Templates</button>
+        <button role="tab" aria-selected={tab === "log"} className={tab === "log" ? "on" : ""} onClick={() => navigate("/emails/log")}>Sent log</button>
+      </div>
 
       {tab === "log" ? <EmailLog /> : (
         <div className="em-layout">

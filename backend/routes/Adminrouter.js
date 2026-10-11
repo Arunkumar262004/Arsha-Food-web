@@ -10,6 +10,11 @@ import { getDashboard, getSystemStatus } from "../controllers/Dashboard-controll
 import { requireAdmin, adminCan } from "../middlewear/adminAuth.js";
 import { listCoupons, createCoupon, updateCoupon, deleteCoupon, couponUsages, sendCouponCampaign } from "../controllers/Coupon-controller.js";
 import { listBanners, createBanner, updateBanner, reorderBanners, deleteBanner } from "../controllers/Banner-controller.js";
+import { listCategories, createCategory, updateCategory, reorderCategories, deleteCategory, syncCategories } from "../controllers/Category-controller.js";
+import { listCustomers, getCustomer } from "../controllers/Customer-controller.js";
+import { getReport, listPayments } from "../controllers/Report-controller.js";
+import { listSubscribers, updateSubscriber, deleteSubscriber } from "../controllers/Subscriber-controller.js";
+import { listSales, createSale, updateSale, deleteSale, listSaleSignups, sendSaleEmails } from "../controllers/Sale-controller.js";
 import multer from "multer";
 import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_BYTES } from "../services/storage.js";
 import { listTemplates, updateTemplate, resetTemplate, previewTemplate, sendTestEmail, emailStatus, listEmailLogs } from "../controllers/Email-controller.js";
@@ -70,6 +75,32 @@ adminRouter.put("/coupons/:id", adminCan("coupons.manage"), updateCoupon);
 adminRouter.delete("/coupons/:id", adminCan("coupons.manage"), deleteCoupon);
 adminRouter.get("/coupons/:id/usages", adminCan("coupons.view"), couponUsages);
 adminRouter.post("/coupons/:id/send", adminCan("coupons.manage", "notifications.manage"), sendCouponCampaign);
+
+// Catalog: categories (listing first adds any category a dish uses but that has no record yet)
+adminRouter.get("/categories", adminCan("products.view"), async (req, res, next) => { await syncCategories(); next(); }, listCategories);
+adminRouter.post("/categories", adminCan("products.create"), bannerUpload.any(), createCategory);
+adminRouter.put("/categories/reorder", adminCan("products.update"), reorderCategories);
+adminRouter.put("/categories/:id", adminCan("products.update"), bannerUpload.any(), updateCategory);
+adminRouter.delete("/categories/:id", adminCan("products.delete"), deleteCategory);
+
+// Customers & newsletter
+adminRouter.get("/customers", adminCan("customers.view"), listCustomers);
+adminRouter.get("/customers/:id", adminCan("customers.view"), getCustomer);
+adminRouter.get("/subscribers", adminCan("customers.view"), listSubscribers);
+adminRouter.put("/subscribers/:id", adminCan("notifications.manage"), updateSubscriber);
+adminRouter.delete("/subscribers/:id", adminCan("notifications.manage"), deleteSubscriber);
+
+// Money
+adminRouter.get("/payments", adminCan("payments.view"), listPayments);
+adminRouter.get("/reports", adminCan("reports.view"), getReport);
+
+// Festival sales
+adminRouter.get("/sales", adminCan("coupons.view"), listSales);
+adminRouter.post("/sales", adminCan("coupons.manage"), createSale);
+adminRouter.put("/sales/:id", adminCan("coupons.manage"), updateSale);
+adminRouter.delete("/sales/:id", adminCan("coupons.manage"), deleteSale);
+adminRouter.get("/sales/:id/signups", adminCan("coupons.view"), listSaleSignups);
+adminRouter.post("/sales/:id/send", adminCan("coupons.manage", "notifications.manage"), sendSaleEmails);
 
 // Home banners (content)
 adminRouter.get("/banners", adminCan("content.view"), listBanners);

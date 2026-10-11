@@ -7,6 +7,7 @@ import { CheckoutSteps, CouponBox, EmptyCart, PriceSummary, useTotals } from '..
 import ProductRail from '../../component/ProductRail/ProductRail';
 import Icon from '../../component/Icon';
 import './Cart.css';
+import { dishPath } from '../../config/store';
 
 const ADD_ONS = ['Cool Drinks', 'Juices & Shakes', 'Deserts', 'Coffee & Tea'];
 
@@ -18,6 +19,7 @@ const Cart = () => {
   useEffect(() => { document.title = 'Your cart — Arsha'; }, []);
 
   const lines = food_list.filter((f) => cartItems[f._id] > 0);
+  const soldOut = lines.filter((f) => f.isAvailable === false);
   const totals = useTotals(get_total_Cart_amount());
   const items = lines.map((f) => ({ id: f._id, quantity: cartItems[f._id] }));
 
@@ -49,12 +51,14 @@ const Cart = () => {
       <div className="co-layout">
         <div className="co-card cart-list">
           {lines.map((f) => (
-            <div className="cart-line" key={f._id}>
-              <Link to={`/viewproduct/${f._id}`} className="cart-thumb"><img src={imageSrc(f.image, 200)} alt="" /></Link>
+            <div className={`cart-line ${f.isAvailable === false ? 'is-out' : ''}`} key={f._id}>
+              <Link to={dishPath(f)} className="cart-thumb"><img src={imageSrc(f.image, 200)} alt="" /></Link>
               <div className="cart-info">
                 <span className="cart-meta"><VegMark isVeg={f.isVeg !== false} size={14} />{catLabel(f.category)}</span>
-                <Link to={`/viewproduct/${f._id}`} className="cart-name">{f.name}</Link>
-                <span className="cart-each">{cur}{f.price} each</span>
+                <Link to={dishPath(f)} className="cart-name">{f.name}</Link>
+                {f.isAvailable === false
+                  ? <span className="cart-out">Sold out — remove to continue</span>
+                  : <span className="cart-each">{cur}{f.price} each{f.mrp && <> · <s>{cur}{f.mrp}</s> <b className="cart-sale">{f.sale?.name}</b></>}</span>}
               </div>
               <div className="cart-qty"><CartControl id={f._id} name={f.name} /></div>
               <div className="cart-total">{cur}{f.price * cartItems[f._id]}</div>
@@ -67,7 +71,12 @@ const Cart = () => {
         <aside className="co-side">
           <CouponBox items={items} subtotal={totals.subtotal} />
           <PriceSummary totals={totals} itemCount={cartCount}>
-            <button className="btn btn-primary btn-block co-pay" onClick={checkout}>
+            {soldOut.length > 0 && (
+              <div className="co-error" role="alert" style={{ marginTop: 14 }}>
+                {soldOut.map((f) => f.name).join(', ')} {soldOut.length > 1 ? 'are' : 'is'} sold out. Remove {soldOut.length > 1 ? 'them' : 'it'} to check out.
+              </div>
+            )}
+            <button className="btn btn-primary btn-block co-pay" onClick={checkout} disabled={soldOut.length > 0}>
               <span>{cur}{totals.total}</span>
               <span className="co-pay-label">{token ? 'Proceed to checkout' : 'Sign in to checkout'}<Icon name="arrowRight" size={18} /></span>
             </button>

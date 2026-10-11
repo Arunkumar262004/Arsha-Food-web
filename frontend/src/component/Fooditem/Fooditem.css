@@ -54,3 +54,16 @@
   .fc .stepper { height: 36px; } .fc .stepper button { width: 30px; height: 36px; }
   .fc-price { font-size: 17px; }
 }
+
+/* Sold out: still visible, can't be added */
+.add-btn.is-soldout, .add-btn:disabled { border-color: var(--line); color: var(--ink-3); background: var(--surface-2); cursor: not-allowed; box-shadow: none; letter-spacing: .02em; }
+.add-btn.is-soldout:hover { background: var(--surface-2); color: var(--ink-3); }
+.stepper button:disabled { opacity: .4; cursor: not-allowed; }
+.fc.is-soldout .fc-media img { filter: grayscale(.85); opacity: .7; }
+.fc-soldout {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 1; white-space: nowrap;
+  background: rgba(35, 21, 12, .85); color: #fff; font-weight: 700; font-size: 13px; padding: 8px 14px; border-radius: 999px;
+}
+
+.fc-tag.sale { background: var(--red); color: #fff; }
+.fc-mrp { margin-left: 8px; font-size: 14px; font-weight: 600; color: var(--ink-3); }

@@ -90,6 +90,17 @@ export const DEFAULT_TEMPLATES = [
             p("Use the code at checkout. {{coupon_expiry}}") + button("Order now", "{{store_url}}")),
         text: "Hi {{customer_name}}, use code {{coupon_code}} for {{coupon_offer}}. {{coupon_expiry}} {{store_url}}",
     },
+    {
+        key: "sale_started",
+        name: "Festival sale is live",
+        description: "Sent automatically when a festival sale starts, to everyone who asked to be notified.",
+        subject: "{{sale_name}} is live, {{customer_name}}! 🎉",
+        variables: ["customer_name", "sale_name", "sale_tagline", "sale_items", "sale_ends", "sale_url", "store_name"],
+        html: layout("{{sale_name}} has started 🎉", p("Hi {{customer_name}}, the sale you signed up for is live now. {{sale_tagline}}") +
+            `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 16px;border:1px solid #ecdfcf;border-radius:12px"><tr><td style="padding:14px 16px;font-size:14px;line-height:1.8;color:#5c4a3d">{{sale_items}}</td></tr></table>` +
+            p("Prices are valid until <strong>{{sale_ends}}</strong> — grab yours before they're gone.") + button("Shop the sale", "{{sale_url}}")),
+        text: "Hi {{customer_name}}, {{sale_name}} is live! {{sale_items}}. Ends {{sale_ends}}. Shop now: {{sale_url}}",
+    },
 ];
 
 // Order status → template sent to the customer when an admin changes the status.

@@ -138,6 +138,11 @@ const run = async () => {
     const res = await FoodModel.updateOne({ name: row.name }, { $set: row }, { upsert: true });
     if (res.upsertedCount) created++; else if (res.modifiedCount) updated++;
   }
+  // updateOne skips save hooks, so give any dish without a URL slug one now.
+  for (const food of await FoodModel.find({ $or: [{ slug: { $exists: false } }, { slug: null }, { slug: "" }] })) {
+    await food.assignSlug();
+    await food.save();
+  }
   console.log(`Demo menu ready: ${created} added, ${updated} updated, ${rows.length} total across ${Object.keys(MENU).length} categories.`);
 };
 

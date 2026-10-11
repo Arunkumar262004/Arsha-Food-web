@@ -5,6 +5,7 @@ import { catLabel } from '../Explorermenu/categories';
 import Icon from '../Icon';
 import { Reveal } from '../Motion';
 import './Fooditem.css';
+import { dishPath } from '../../config/store';
 
 // Indian food-labelling mark: green square/dot = veg, brown square/triangle = non-veg.
 export const VegMark = ({ isVeg = true, size = 16 }) => (
@@ -14,8 +15,12 @@ export const VegMark = ({ isVeg = true, size = 16 }) => (
 
 // ADD button turns into a quantity stepper once the item is in the cart — one control, never two.
 export const CartControl = ({ id, name, large }) => {
-  const { cartItems, addToCart, removeItemFromCart } = useContext(StoreContext);
+  const { cartItems, addToCart, removeItemFromCart, food_list } = useContext(StoreContext);
   const qty = cartItems[id] || 0;
+  const soldOut = food_list.find((f) => f._id === id)?.isAvailable === false;
+  if (soldOut && !qty) {
+    return <button className={large ? 'btn btn-ghost' : 'add-btn is-soldout'} disabled>Sold out</button>;
+  }
   if (!qty) {
     return large ? (
       <button className="btn btn-primary" onClick={() => addToCart(id)}><Icon name="plus" size={18} />Add to cart</button>
@@ -29,21 +34,26 @@ export const CartControl = ({ id, name, large }) => {
     <div className={`stepper ${large ? 'stepper-lg' : ''}`} role="group" aria-label={`${name} quantity`}>
       <button onClick={() => removeItemFromCart(id)} aria-label={`Remove one ${name}`}><Icon name="minus" size={16} stroke={2.6} /></button>
       <span aria-live="polite">{qty}</span>
-      <button onClick={() => addToCart(id)} aria-label={`Add one more ${name}`}><Icon name="plus" size={16} stroke={2.6} /></button>
+      <button onClick={() => addToCart(id)} disabled={soldOut} aria-label={`Add one more ${name}`}><Icon name="plus" size={16} stroke={2.6} /></button>
     </div>
   );
 };
 
 const Fooditem = ({ item, index = 0 }) => {
   const { imageSrc, settings } = useContext(StoreContext);
-  const { _id: id, name, price, description, image, category, isVeg, tag } = item;
-  const to = `/viewproduct/${id}`;
+  const { _id: id, name, price, mrp, description, image, category, isVeg, tag, isAvailable } = item;
+  const off = mrp ? Math.round((1 - price / mrp) * 100) : 0;
+  const soldOut = isAvailable === false;
+  const to = dishPath(item);
 
   return (
-    <Reveal as="article" className="fc" delay={Math.min(index % 4, 3) * 0.07}>
+    <Reveal as="article" className={`fc ${soldOut ? 'is-soldout' : ''}`} delay={Math.min(index % 4, 3) * 0.07}>
       <Link to={to} className="fc-media" tabIndex={-1} aria-hidden="true">
         <img src={imageSrc(image, 560)} alt="" loading="lazy" />
-        {tag && <span className={`fc-tag ${/spicy/i.test(tag) ? 'hot' : ''}`}>{tag}</span>}
+        {off > 0 && !soldOut
+          ? <span className="fc-tag sale">{off}% OFF · {item.sale?.name || 'Sale'}</span>
+          : tag && !soldOut && <span className={`fc-tag ${/spicy/i.test(tag) ? 'hot' : ''}`}>{tag}</span>}
+        {soldOut && <span className="fc-soldout">Sold out today</span>}
       </Link>
       <div className="fc-body">
         <div className="fc-meta">
@@ -53,7 +63,7 @@ const Fooditem = ({ item, index = 0 }) => {
         <Link to={to} className="fc-name">{name}</Link>
         <p className="fc-desc">{description}</p>
         <div className="fc-foot">
-          <span className="fc-price">{settings.currencySymbol}{price}</span>
+          <span className="fc-price">{settings.currencySymbol}{price}{mrp && <s className="fc-mrp">{settings.currencySymbol}{mrp}</s>}</span>
           <CartControl id={id} name={name} />
         </div>
       </div>

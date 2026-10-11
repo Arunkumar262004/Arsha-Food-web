@@ -10,3 +10,6 @@ export const STORE_INFO = {
 
 export const whatsappLink = (text = "Hi Arsha! I'd like to place an order.") =>
   `https://wa.me/${STORE_INFO.whatsapp}?text=${encodeURIComponent(text)}`;
+
+// Readable product URL: /dish/hyderabadi-chicken-dum-biryani (falls back to the id for dishes without a slug).
+export const dishPath = (food) => `/dish/${food?.slug || food?._id}`;

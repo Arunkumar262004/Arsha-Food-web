@@ -9,19 +9,12 @@ import { Delta, Segmented, PageHead, StatusBadge, PaymentBadge, Empty } from "..
 import Icon from "../../components/Icon";
 import { useAuth } from "../../context/AuthContext";
 import "./Dashboard.css";
+import dishArt from "../../assets/dish-cutout.webp";
+import { CHART, CHART_TINT, STATUS_COLOR } from "../../lib/theme";
 
 // Categorical order (validated: CVD-safe adjacent pairs). Orange is low-contrast, so it always ships with a text label.
-const SERIES = { blue: "#2F6BFF", orange: "#F08A24", teal: "#14A38B", purple: "#8B5CF6" };
-
-// Status colours are reserved for order state and always appear next to their label.
-const STATUS_COLOR = {
-  "Payment Pending": "#E0A030",
-  "Food Processing": "#2F6BFF",
-  "Out for Delivery": "#8B5CF6",
-  "Delivered": "#12A36B",
-  "Cancelled": "#E5384F",
-  "Payment Failed": "#F07B8A",
-};
+// Chart colours come from the shared admin palette.
+const SERIES = { blue: CHART.primary, orange: CHART.gold, teal: CHART.green, purple: CHART.plum };
 
 const RANGES = [
   { value: "today", label: "Today" },
@@ -91,7 +84,7 @@ const ChartTip = ({ active, payload, label, unit, metric }) => {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { can } = useAuth();
+  const { can, admin } = useAuth();
   const [range, setRange] = useState("7d");
   const [custom, setCustom] = useState(() => {
     const to = new Date(), from = new Date(Date.now() - 6 * 86400000);
@@ -176,14 +169,36 @@ const Dashboard = () => {
 
       {data && (
         <div className={`dash-body ${loading ? "is-loading" : ""}`}>
+          {/* ── Today at a glance ── */}
+          <section className="dash-hero">
+            <img className="dash-hero-art" src={dishArt} alt="" />
+            <div className="dash-hero-copy">
+              <span className="dash-hero-kicker">{new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}</span>
+              <h2>Welcome back, {admin?.name?.split(" ")[0] || "chef"}</h2>
+              <p>{k.processingOrders + k.outForDelivery > 0
+                ? `${k.processingOrders + k.outForDelivery} order${k.processingOrders + k.outForDelivery === 1 ? " is" : "s are"} in the kitchen or on the way.`
+                : "No orders waiting in the kitchen right now."}</p>
+              <div className="dash-hero-actions">
+                <button className="btn btn-gold" onClick={() => navigate("/orders")}><Icon name="bag" size={16} />Open orders</button>
+                {can("products.create") && <button className="btn dash-hero-ghost" onClick={() => navigate("/products/new")}><Icon name="plus" size={16} />Add a dish</button>}
+              </div>
+            </div>
+            <div className="dash-hero-stats">
+              <div><span>Today's sales</span><strong className="num">{money(k.todaySales)}</strong></div>
+              <div><span>This week</span><strong className="num">{moneyShort(k.weekSales)}</strong></div>
+              <div><span>In the kitchen</span><strong className="num">{number(k.processingOrders)}</strong></div>
+              <div><span>Out for delivery</span><strong className="num">{number(k.outForDelivery)}</strong></div>
+            </div>
+          </section>
+
           {/* ── KPI row ── */}
           <div className="kpi-grid">
             <KpiCard icon="rupee" label="Revenue" value={moneyShort(p.revenue)} delta={p.revenueChange}
               spark={series.map((s) => s.revenue)} color={SERIES.blue} tint="var(--primary-soft)" />
             <KpiCard icon="bag" label="Orders" value={number(p.orders)} delta={p.ordersChange}
-              spark={series.map((s) => s.orders)} color={SERIES.teal} tint="#e5f6f2" />
+              spark={series.map((s) => s.orders)} color={SERIES.teal} tint={CHART_TINT.green} />
             <KpiCard icon="user" label="New customers" value={number(p.newCustomers)} delta={p.newCustomersChange}
-              spark={series.map((s) => s.newCustomers)} color={SERIES.orange} tint="#fff1e3" />
+              spark={series.map((s) => s.newCustomers)} color={SERIES.orange} tint={CHART_TINT.gold} />
             <KpiCard icon="receipt" label="Avg. order value" value={money(p.aov)} delta={p.aovChange}
               spark={series.map((s) => s.orders ? s.revenue / s.orders : 0)} color={SERIES.purple} tint="var(--accent-soft)" />
           </div>
@@ -245,19 +260,19 @@ const Dashboard = () => {
                           <stop offset="1" stopColor={SERIES.blue} stopOpacity="0" />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid vertical={false} stroke="#edf0f6" />
-                      <XAxis dataKey="bucket" tickFormatter={(b) => bucketLabel(b, unit)} tick={{ fontSize: 12, fill: "#8a93a8" }} axisLine={false} tickLine={false} minTickGap={24} />
-                      <YAxis tickFormatter={(v) => moneyShort(v).replace(".00", "")} tick={{ fontSize: 12, fill: "#8a93a8" }} axisLine={false} tickLine={false} width={64} />
-                      <Tooltip content={<ChartTip unit={unit} metric="revenue" />} cursor={{ stroke: "#8a93a8", strokeDasharray: "4 4" }} />
+                      <CartesianGrid vertical={false} stroke={CHART.grid} />
+                      <XAxis dataKey="bucket" tickFormatter={(b) => bucketLabel(b, unit)} tick={{ fontSize: 12, fill: CHART.axis }} axisLine={false} tickLine={false} minTickGap={24} />
+                      <YAxis tickFormatter={(v) => moneyShort(v).replace(".00", "")} tick={{ fontSize: 12, fill: CHART.axis }} axisLine={false} tickLine={false} width={64} />
+                      <Tooltip content={<ChartTip unit={unit} metric="revenue" />} cursor={{ stroke: CHART.axis, strokeDasharray: "4 4" }} />
                       <Area type="monotone" dataKey="revenue" stroke={SERIES.blue} strokeWidth={2} fill="url(#revFill)"
                         activeDot={{ r: 5, stroke: "#fff", strokeWidth: 2 }} />
                     </AreaChart>
                   ) : (
                     <BarChart data={series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="28%">
-                      <CartesianGrid vertical={false} stroke="#edf0f6" />
-                      <XAxis dataKey="bucket" tickFormatter={(b) => bucketLabel(b, unit)} tick={{ fontSize: 12, fill: "#8a93a8" }} axisLine={false} tickLine={false} minTickGap={24} />
-                      <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#8a93a8" }} axisLine={false} tickLine={false} width={40} />
-                      <Tooltip content={<ChartTip unit={unit} metric="orders" />} cursor={{ fill: "rgba(47,107,255,.06)" }} />
+                      <CartesianGrid vertical={false} stroke={CHART.grid} />
+                      <XAxis dataKey="bucket" tickFormatter={(b) => bucketLabel(b, unit)} tick={{ fontSize: 12, fill: CHART.axis }} axisLine={false} tickLine={false} minTickGap={24} />
+                      <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: CHART.axis }} axisLine={false} tickLine={false} width={40} />
+                      <Tooltip content={<ChartTip unit={unit} metric="orders" />} cursor={{ fill: "rgba(122,74,33,.06)" }} />
                       <Bar dataKey="orders" fill={SERIES.blue} radius={[4, 4, 0, 0]} maxBarSize={28} />
                     </BarChart>
                   )}
@@ -277,7 +292,7 @@ const Dashboard = () => {
                       <PieChart>
                         <Pie data={statusData} dataKey="count" nameKey="status" innerRadius="68%" outerRadius="100%"
                           startAngle={90} endAngle={-270} stroke="#fff" strokeWidth={2} isAnimationActive={false}>
-                          {statusData.map((s) => <Cell key={s.status} fill={STATUS_COLOR[s.status] || "#b8c0d0"} />)}
+                          {statusData.map((s) => <Cell key={s.status} fill={STATUS_COLOR[s.status] || CHART.slate} />)}
                         </Pie>
                         <Tooltip formatter={(v, n) => [`${v} orders`, n]} />
                       </PieChart>
@@ -287,7 +302,7 @@ const Dashboard = () => {
                   <ul className="legend">
                     {statusData.map((s) => (
                       <li key={s.status}>
-                        <i style={{ background: STATUS_COLOR[s.status] || "#b8c0d0" }} />
+                        <i style={{ background: STATUS_COLOR[s.status] || CHART.slate }} />
                         <span>{s.status}</span>
                         <strong className="num">{Math.round((s.count / statusTotal) * 100)}%</strong>
                       </li>

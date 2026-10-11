@@ -1,22 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { api, errMsg, imageSrc } from "../../lib/api";
 import { money, dateShort } from "../../lib/format";
 import { PageHead, ConfirmDialog, Empty, Modal } from "../../components/ui";
 import Icon from "../../components/Icon";
 import { useAuth } from "../../context/AuthContext";
+import { LinkedDishes, MenuLabels, SeoFields, useCategoryNames } from "../../components/ProductFields";
 
-const CATEGORY_OPTIONS = [
-  "Biryani", "Meals", "South Indian", "Starters", "Snacks", "Burgers & Pizza",
-  "Rolls", "Sandwich", "Noodles", "Pasta", "Pure Veg", "Salad",
-  "Cool Drinks", "Juices & Shakes", "Coffee & Tea", "Cake", "Deserts",
-];
 
 const EditProductModal = ({ item, onClose, onSaved }) => {
   const [name, setName] = useState(item.name || "");
   const [description, setDescription] = useState(item.description || "");
-  const [category, setCategory] = useState(item.category || "Salad");
+  const [category, setCategory] = useState(item.category || "");
+  const [labels, setLabels] = useState({ isVeg: item.isVeg !== false, tag: item.tag || "", isAvailable: item.isAvailable !== false });
+  const categories = useCategoryNames();
+  const [seo, setSeo] = useState({ seoTitle: item.seoTitle || "", seoDescription: item.seoDescription || "" });
   const [price, setPrice] = useState(item.price || "");
 
   const getIds = (arr) => {
@@ -37,9 +36,6 @@ const EditProductModal = ({ item, onClose, onSaved }) => {
     });
   }, [item._id]);
 
-  const toggleSelection = (list, setList, id) => {
-    setList((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-  };
 
   const initialExisting = item.images && item.images.length ? item.images : (item.image ? [item.image] : []);
   const [existingImages, setExistingImages] = useState(initialExisting);
@@ -79,6 +75,11 @@ const EditProductModal = ({ item, onClose, onSaved }) => {
       formData.append("upsells", JSON.stringify(upsells));
       formData.append("crossSells", JSON.stringify(crossSells));
       formData.append("relatedProducts", JSON.stringify(relatedProducts));
+      formData.append("isVeg", labels.isVeg);
+      formData.append("isAvailable", labels.isAvailable);
+      formData.append("tag", labels.tag.trim());
+      formData.append("seoTitle", seo.seoTitle.trim());
+      formData.append("seoDescription", seo.seoDescription.trim());
 
       newImageFiles.forEach((file) => {
         formData.append("images", file);
@@ -86,7 +87,7 @@ const EditProductModal = ({ item, onClose, onSaved }) => {
 
       const response = await api.post("/api/food/update", formData);
       if (response.data.success) {
-        toast.success("Product updated successfully with associations!");
+        toast.success(`${name} saved`);
         onSaved();
       } else {
         toast.error(response.data.message || "Failed to update product");
@@ -188,7 +189,8 @@ const EditProductModal = ({ item, onClose, onSaved }) => {
           <div className="field">
             <label htmlFor="edit-cat">Category</label>
             <select id="edit-cat" className="select" required value={category} onChange={(e) => setCategory(e.target.value)}>
-              {CATEGORY_OPTIONS.map((c) => (
+              {/* keep the current value selectable even if its category was removed */}
+              {[...new Set([...(categories || []), category].filter(Boolean))].map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>
@@ -222,89 +224,21 @@ const EditProductModal = ({ item, onClose, onSaved }) => {
           />
         </div>
 
-        {/* PRODUCT ASSOCIATIONS IN EDIT MODAL */}
-        <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 14, padding: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ fontWeight: 700, fontSize: 13.5, color: 'var(--ink)' }}>
-            🔗 Linked Recommendations & Associations
-          </div>
+        <div className="pf-section">
+          <h4>Menu labels</h4>
+          <MenuLabels value={labels} onChange={setLabels} />
+        </div>
 
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-2)', display: 'block', marginBottom: 4 }}>
-              🍱 Cross-Sells ("Complete Your Meal" - Dips, Drinks, Sides)
-            </label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 100, overflowY: 'auto', padding: 2 }}>
-              {existingFoods.map((f) => {
-                const selected = crossSells.includes(f._id);
-                return (
-                  <button
-                    key={f._id}
-                    type="button"
-                    onClick={() => toggleSelection(crossSells, setCrossSells, f._id)}
-                    style={{
-                      background: selected ? '#f26b1d' : '#fff',
-                      color: selected ? '#fff' : '#334155',
-                      border: selected ? '1px solid #f26b1d' : '1px solid #cbd5e1',
-                      borderRadius: 16, padding: '3px 8px', fontSize: 11.5, fontWeight: 500, cursor: 'pointer'
-                    }}
-                  >
-                    {selected ? '✓ ' : '+ '}{f.name} (₹{f.price})
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+        <div className="pf-section">
+          <h4>Search engine listing (SEO)</h4>
+          <SeoFields value={seo} onChange={setSeo} name={name} description={description} slug={item.slug} />
+        </div>
 
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-2)', display: 'block', marginBottom: 4 }}>
-              ⭐ Up-Sells (Premium/Larger Combo Alternatives)
-            </label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 100, overflowY: 'auto', padding: 2 }}>
-              {existingFoods.map((f) => {
-                const selected = upsells.includes(f._id);
-                return (
-                  <button
-                    key={f._id}
-                    type="button"
-                    onClick={() => toggleSelection(upsells, setUpsells, f._id)}
-                    style={{
-                      background: selected ? '#0284c7' : '#fff',
-                      color: selected ? '#fff' : '#334155',
-                      border: selected ? '1px solid #0284c7' : '1px solid #cbd5e1',
-                      borderRadius: 16, padding: '3px 8px', fontSize: 11.5, fontWeight: 500, cursor: 'pointer'
-                    }}
-                  >
-                    {selected ? '✓ ' : '+ '}{f.name} (₹{f.price})
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-2)', display: 'block', marginBottom: 4 }}>
-              🍲 Related Products ("You Might Also Like")
-            </label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 100, overflowY: 'auto', padding: 2 }}>
-              {existingFoods.map((f) => {
-                const selected = relatedProducts.includes(f._id);
-                return (
-                  <button
-                    key={f._id}
-                    type="button"
-                    onClick={() => toggleSelection(relatedProducts, setRelatedProducts, f._id)}
-                    style={{
-                      background: selected ? '#16a34a' : '#fff',
-                      color: selected ? '#fff' : '#334155',
-                      border: selected ? '1px solid #16a34a' : '1px solid #cbd5e1',
-                      borderRadius: 16, padding: '3px 8px', fontSize: 11.5, fontWeight: 500, cursor: 'pointer'
-                    }}
-                  >
-                    {selected ? '✓ ' : '+ '}{f.name} (₹{f.price})
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+        <div className="pf-section">
+          <h4>Linked dishes</h4>
+          <LinkedDishes foods={existingFoods}
+            value={{ crossSells, upsells, relatedProducts }}
+            onChange={(v) => { setCrossSells(v.crossSells); setUpsells(v.upsells); setRelatedProducts(v.relatedProducts); }} />
         </div>
       </form>
     </Modal>
@@ -317,7 +251,9 @@ const List = () => {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
-  const [cat, setCat] = useState("All");
+  const [params] = useSearchParams();
+  // Opened from Categories → "N dishes": start filtered to that category.
+  const [cat, setCat] = useState(() => params.get("category") || "All");
   const [sort, setSort] = useState("newest");
   const [editing, setEditing] = useState(null);
   const [confirm, setConfirm] = useState(null);
@@ -451,7 +387,12 @@ const List = () => {
                           style={{ width: 48, height: 48, borderRadius: 12, objectFit: "cover", background: "var(--surface-2)", flexShrink: 0 }}
                         />
                         <div style={{ minWidth: 0 }}>
-                          <strong style={{ fontWeight: 600 }}>{item.name}</strong>
+                          <strong style={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
+                            <span className={`iv-veg ${item.isVeg !== false ? "veg" : "nonveg"}`} title={item.isVeg !== false ? "Vegetarian" : "Non-vegetarian"} />
+                            {item.name}
+                            {item.tag && <span className="badge badge-amber" style={{ height: 20, fontSize: 11 }}>{item.tag}</span>}
+                            {item.isAvailable === false && <span className="badge badge-red" style={{ height: 20, fontSize: 11 }}>Sold out</span>}
+                          </strong>
                           <div
                             className="muted"
                             style={{ fontSize: 12, maxWidth: 360, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
@@ -462,7 +403,7 @@ const List = () => {
                       </div>
                     </td>
                     <td>
-                      <span className="badge badge-blue">{item.category}</span>
+                      <span className="badge">{item.category}</span>
                     </td>
                     <td className="right num">
                       <strong>{money(item.price)}</strong>

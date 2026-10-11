@@ -150,7 +150,7 @@ const Order = () => {
                 : rows.length === 0 ? <tr><td colSpan={8}><Empty title="No orders found">Try a different filter or search.</Empty></td></tr>
                 : rows.map((o) => (
                   <tr key={o._id} className="clickable" onClick={() => navigate(`/orders/${o._id}`)}>
-                    <td><strong>{orderNo(o)}</strong></td>
+                    <td style={{ whiteSpace: "nowrap" }}><strong>{orderNo(o)}</strong></td>
                     <td>
                       <div>{customerName(o)}</div>
                       <div className="muted" style={{ fontSize: 12 }}>{[o.address?.city, o.address?.phone].filter(Boolean).join(" · ")}</div>

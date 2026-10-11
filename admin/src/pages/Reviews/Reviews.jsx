@@ -82,19 +82,10 @@ const Reviews = () => {
         sub="Moderate customer feedback & verified buyer ratings before they appear on product pages."
       />
 
-      <div className="rv-stats">
-        <div className="card rv-stat">
-          <span>Pending Approval</span>
-          <strong style={{ color: "#d97706" }}>{counts.pending}</strong>
-        </div>
-        <div className="card rv-stat">
-          <span>Approved & Published</span>
-          <strong style={{ color: "#16a34a" }}>{counts.approved}</strong>
-        </div>
-        <div className="card rv-stat">
-          <span>Rejected</span>
-          <strong style={{ color: "#dc2626" }}>{counts.rejected}</strong>
-        </div>
+      <div className="kpis">
+        <div className="card kpi is-gold"><span><i className="kpi-i"><Icon name="clock" size={16} /></i>Waiting for approval</span><strong className="num">{counts.pending}</strong><small>not shown on the store yet</small></div>
+        <div className="card kpi is-green"><span><i className="kpi-i"><Icon name="check" size={16} /></i>Published</span><strong className="num">{counts.approved}</strong><small>visible on dish pages</small></div>
+        <div className="card kpi is-red"><span><i className="kpi-i"><Icon name="close" size={16} /></i>Rejected</span><strong className="num">{counts.rejected}</strong><small>hidden from customers</small></div>
       </div>
 
       <div className="card">
