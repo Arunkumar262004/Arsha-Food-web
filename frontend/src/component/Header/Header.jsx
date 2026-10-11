@@ -119,7 +119,9 @@ const Header = () => {
           </SpinBadge>
           {slides.map((s, i) => (
             <img key={s._id || i} src={src(s)} alt={i === index ? s.title.replace(/\*/g, '') : ''}
-              className={`hero-img ${place(i)}`} aria-hidden={i !== index}
+              className={`hero-img ${place(i)}`}
+              // A missing banner image shows nothing rather than the browser's broken-image icon and alt text.
+              onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} aria-hidden={i !== index}
               loading={i === 0 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : undefined} />
           ))}
         </div>

@@ -40,7 +40,9 @@ connectdb().then(() => bootstrap()).then(() => startSaleWatcher()).catch(err => 
 
 // api enddpoints
 app.use("/api/food",foodRouter);
-app.use("/images",express.static('uploads'));
+// Uploaded images live in uploads/ (not in git; on Render this disk is wiped on every deploy).
+// static-images/ is committed, so images the live data relies on keep working after a redeploy.
+app.use("/images", express.static("uploads"), express.static("static-images"));
 app.use("/api/user",user_router);
 app.use("/api/admin", adminRouter);
 app.use("/api/cart",cart_router);
