@@ -29,6 +29,25 @@ const pageParams = (req, max = 100) => {
 
 // ───────────────────────── Auth ─────────────────────────
 
+// ───────────── Demo ─────────────
+// Set ADMIN_DEMO=false to remove the "Explore the demo" button and disable demo sign-in.
+export const DEMO_EMAIL = "demo@demo.local";
+export const demoEnabled = () => process.env.ADMIN_DEMO !== "false";
+
+// GET /api/admin/demo
+export const demoStatus = (req, res) => res.json({ success: true, enabled: demoEnabled() });
+
+// POST /api/admin/demo-login — no password: the account can only read, and sees masked customer data.
+export const demoLogin = async (req, res) => {
+  if (!demoEnabled()) return res.status(404).json({ success: false, message: "The demo is turned off" });
+  const admin = await Admin.findOne({ email: DEMO_EMAIL, isDemo: true }).populate("role");
+  if (!admin || !admin.isActive) return res.status(503).json({ success: false, message: "The demo isn't ready yet. Try again in a minute." });
+  admin.lastLoginAt = new Date();
+  await admin.save();
+  const token = jwt.sign({ id: admin._id, type: "admin", tv: admin.tokenVersion || 0 }, process.env.JWT_SECRET, { expiresIn: "2h" });
+  res.json({ success: true, token, admin: admin.toSafeJSON() });
+};
+
 // POST /api/admin/login
 export const adminLogin = async (req, res) => {
   const email = String(req.body.email || "").toLowerCase().trim();
@@ -115,7 +134,7 @@ export const changePassword = async (req, res) => {
 
 // GET /api/admin/users
 export const listAdmins = async (req, res) => {
-  const admins = await Admin.find().populate("role").sort({ createdAt: -1 });
+  const admins = await Admin.find({ isDemo: { $ne: true } }).populate("role").sort({ createdAt: -1 });
   res.json({ success: true, data: admins.map(a => ({ ...a.toSafeJSON(), lastLoginIp: a.lastLoginIp, locked: a.isLocked() })) });
 };
 

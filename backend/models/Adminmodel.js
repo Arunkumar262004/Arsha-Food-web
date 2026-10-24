@@ -6,6 +6,8 @@ const adminSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: { type: mongoose.Schema.Types.ObjectId, ref: "Role" },
   isActive: { type: Boolean, default: true },
+  // The shared "Explore demo" account: read-only, customer details masked (see middlewear/demoMask.js).
+  isDemo: { type: Boolean, default: false },
 
   // Login tracking / lockout
   lastLoginAt: { type: Date },
@@ -30,6 +32,7 @@ adminSchema.methods.toSafeJSON = function () {
     name: this.name,
     email: this.email,
     isActive: this.isActive,
+    isDemo: !!this.isDemo,
     lastLoginAt: this.lastLoginAt,
     role: role ? { id: role._id, name: role.name, slug: role.slug } : null,
     permissions: role ? role.permissions : [],

@@ -35,13 +35,21 @@ export const AuthProvider = ({ children }) => {
     return r.data.admin;
   };
 
+  // Read-only demo account: token kept for this browser tab only.
+  const demoLogin = async () => {
+    const r = await api.post("/api/admin/demo-login");
+    tokenStore.set(r.data.token, false);
+    setAdmin(r.data.admin);
+    return r.data.admin;
+  };
+
   const can = useCallback(
     (perm) => !perm || !!admin?.permissions?.some((p) => p === "*" || p === perm),
     [admin]
   );
 
   return (
-    <AuthContext.Provider value={{ admin, loading, login, logout, can }}>
+    <AuthContext.Provider value={{ admin, loading, login, demoLogin, logout, can }}>
       {children}
     </AuthContext.Provider>
   );

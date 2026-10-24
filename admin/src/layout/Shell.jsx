@@ -143,6 +143,13 @@ const Shell = ({ children }) => {
           </div>
         </header>
 
+        {admin?.isDemo && (
+          <div className="demo-bar" role="status">
+            <Icon name="eye" size={16} />
+            <span><strong>Demo mode</strong> — you can look at everything, but changes aren't saved and customer details are hidden.</span>
+            <button className="btn btn-sm demo-bar-btn" onClick={() => logout()}>Exit demo</button>
+          </div>
+        )}
         <main className="content">{children}</main>
       </div>
 

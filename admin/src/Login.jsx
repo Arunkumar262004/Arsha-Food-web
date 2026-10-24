@@ -1,13 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useAuth } from './context/AuthContext';
-import { errMsg } from './lib/api';
+import { api, errMsg } from './lib/api';
 import Icon from './components/Icon';
 import './Login.css';
 import loginBg from './assets/login-bg.webp';
 
 const Login = () => {
-  const { login } = useAuth();
+  const { login, demoLogin } = useAuth();
+  const [demoOn, setDemoOn] = useState(false);
+  const [demoBusy, setDemoBusy] = useState(false);
+  useEffect(() => { api.get('/api/admin/demo').then((r) => setDemoOn(!!r.data.enabled)).catch(() => {}); }, []);
+
+  const tryDemo = async () => {
+    setError(''); setDemoBusy(true);
+    try {
+      await demoLogin();
+      toast.info('You are exploring a read-only demo. Customer details are hidden.');
+    } catch (err) {
+      setError(errMsg(err, 'The demo is not available right now.'));
+    } finally {
+      setDemoBusy(false);
+    }
+  };
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(true);
@@ -92,6 +107,17 @@ const Login = () => {
               {loading ? <><span className="spinner" /> Signing in…</> : <>Sign in <Icon name="arrowRight" size={18} /></>}
             </button>
           </form>
+
+          {demoOn && (
+            <>
+              <div className="demo-or"><span>or</span></div>
+              <button type="button" className="demo-btn" onClick={tryDemo} disabled={demoBusy || loading}>
+                {demoBusy ? <span className="spinner" /> : <Icon name="eye" size={18} />}
+                <span><strong>Explore the demo</strong><small>Look around every page — read-only, no sign-in needed</small></span>
+                <Icon name="arrowRight" size={18} />
+              </button>
+            </>
+          )}
 
           <p className="card-foot">Accounts lock for 15 minutes after 5 failed attempts.</p>
         </div>

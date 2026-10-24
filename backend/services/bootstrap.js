@@ -8,6 +8,8 @@ import { DEFAULT_TEMPLATES } from "./emailTemplates.js";
 
 import FoodModel from "../models/Foodmodel.js";
 import { syncCategories } from "../controllers/Category-controller.js";
+import { DEMO_EMAIL } from "../controllers/Admincontroller.js";
+import crypto from "crypto";
 import Coupon from "../models/Couponmodel.js";
 import ReviewModel from "../models/Reviewmodel.js";
 
@@ -83,6 +85,18 @@ export const bootstrap = async () => {
     } catch (err) {
         console.warn("Error assigning dish slugs:", err.message);
     }
+
+    // Read-only demo account for the "Explore the demo" button (all *.view permissions, nothing else).
+    try {
+        const viewPerms = ALL_PERMISSIONS.filter((p) => p.endsWith(".view"));
+        const role = await Role.findOneAndUpdate({ slug: "demo" },
+            { $set: { name: "Demo (read-only)", description: "Used by the public demo. Can look at everything, change nothing.", permissions: viewPerms, isSystem: true } },
+            { upsert: true, new: true });
+        await Admin.updateOne({ email: DEMO_EMAIL },
+            { $set: { role: role._id, isDemo: true, isActive: true, name: "Demo Visitor" },
+              $setOnInsert: { email: DEMO_EMAIL, password: await bcrypt.hash(crypto.randomBytes(24).toString("hex"), 10) } },
+            { upsert: true });
+    } catch (err) { console.warn("Error setting up demo account:", err.message); }
 
     try { await syncCategories(); } catch (err) { console.warn("Error importing categories:", err.message); }
 

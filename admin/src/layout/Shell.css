@@ -123,3 +123,9 @@
   .hd { padding: 0 12px; gap: 8px; height: 62px; }
   .hide-sm { display: none !important; }
 }
+
+.demo-bar { display: flex; align-items: center; gap: 10px; padding: 10px 32px; background: var(--gold-soft); border-bottom: 1px solid #f0dcb8; color: #7a4f14; font-size: 13.5px; }
+.demo-bar svg { flex-shrink: 0; }
+.demo-bar span { flex: 1; }
+.demo-bar-btn { background: #fff; border-color: #f0dcb8; color: var(--ink); }
+@media (max-width: 640px) { .demo-bar { padding: 10px 14px; } }

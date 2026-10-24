@@ -4,7 +4,7 @@ import {
   adminLogin, adminLogout, getMe, changePassword,
   listAdmins, createAdmin, updateAdmin,
   listPermissions, listRoles, createRole, updateRole, deleteRole,
-  listAuditLogs, getAdminSettings, updateAdminSettings,
+  listAuditLogs, getAdminSettings, updateAdminSettings, demoStatus, demoLogin,
 } from "../controllers/Admincontroller.js";
 import { getDashboard, getSystemStatus } from "../controllers/Dashboard-controller.js";
 import { requireAdmin, adminCan } from "../middlewear/adminAuth.js";
@@ -42,6 +42,9 @@ const loginLimiter = rateLimit({
 // Auth
 adminRouter.post("/login", loginLimiter, adminLogin);
 adminRouter.post("/logout", requireAdmin, adminLogout);
+adminRouter.get("/demo", demoStatus);
+adminRouter.post("/demo-login", rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: "draft-7", legacyHeaders: false,
+  message: { success: false, message: "Too many demo sign-ins. Try again shortly." } }), demoLogin);
 adminRouter.get("/me", requireAdmin, getMe);
 adminRouter.post("/change-password", requireAdmin, changePassword);
 

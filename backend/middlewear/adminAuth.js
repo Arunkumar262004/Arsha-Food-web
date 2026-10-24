@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import Admin from "../models/Adminmodel.js";
 import { hasPermission } from "../config/permissions.js";
+import { demoGuard } from "./demoMask.js";
 
 const readToken = (req) => {
     const auth = req.headers.authorization || "";
@@ -30,7 +31,8 @@ export const requireAdmin = async (req, res, next) => {
         }
         req.admin = admin;
         req.permissions = admin.role?.permissions || [];
-        next();
+        // Demo sessions: read-only, personal data masked.
+        demoGuard(req, res, next);
     } catch (err) {
         console.error("Admin auth error:", err.message);
         res.status(500).json({ success: false, message: "Server error" });
